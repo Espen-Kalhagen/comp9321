@@ -114,7 +114,20 @@
       methods: {
         handleRequest: function(response){
           result = response.data;
+          
+          //Request not successfull
+          if(response.status != 200){
+            Swal.fire({
+              title: '<strong>Unable to predict</strong>',
+              icon: 'error',
+              html:
+                'Predict-a-thon failed with error '+response.statusText,
+              showCloseButton: true});
+          }
+
           console.log(response);
+
+          //A rating received
           if(result.rating != null){
             Swal.fire({
               title: '<strong>'+result.rating+'</strong>',
@@ -123,41 +136,64 @@
                 'Predict-a-thons predicted a user rating',
               showCloseButton: true});
           }
+          //A sales number recived
           else if(result.sales != null){
             Swal.fire({
-              title: '<strong>'+result.rating+'</strong>',
+              title: '<strong>'+result.sales+'</strong>',
               icon: 'success',
               html:
-                'Predict-a-thons predicted a sales number in region ' + this.region2,
+                'Predict-a-thons predicted sales number in ' + this.region2,
               showCloseButton: true});
           }
         },
+        handleError: function(error){
+          Swal.fire({
+              title: '<strong>Unable to predict</strong>',
+              icon: 'error',
+              html:
+                'Predict-a-thon failed with error: '+error.message,
+              showCloseButton: true});
+        },
         clickPredictSales: function () {
           this.errors = [];
-
-          if (!this.rating) {
+          //Error handeling
+          if (this.rating == null) {
             this.errors.push('Rating required');
-            
           }
-          if(this.errors.lenght){
-            return
+          if (parseInt(this.rating) < 0 || parseInt(this.rating) > 100 ) {
+            this.errors.push('Rating required to be between 0 and 100');
           }
-          alert("post"+this.rating+this.region2)
+
+
+          if(this.errors.length < 1){
+            axios
+              .get('https://6d61d194-0851-49f9-b050-6e71675fa040.mock.pstmn.io/sal')
+              .then(response => this.handleRequest(response))
+              .catch(error => this.handleError(error));
+
+          }
+
+
         },
         clickPredictRating: function () {
 
           this.errors = [];
-
-          if (!this.sales) {
+          //Error handeling
+          if (this.sales == null) {
             this.errors.push('Sales required');
           }
-          if(this.errors.lenght){
-            return
+          if (parseInt(this.sales) < 0) {
+            this.errors.push('Sales required to be positive');
+          }
+
+          if(this.errors.length < 1){
+            axios
+              .get('https://6d61d194-0851-49f9-b050-6e71675fa040.mock.pstmn.io/rating')
+              .then(response => this.handleRequest(response))
+              .catch(error => this.handleError(error));
           }
           
-          axios
-              .get('https://6d61d194-0851-49f9-b050-6e71675fa040.mock.pstmn.io/rating')
-              .then(response => this.handleRequest(response)); 
+          
         },
         
       }
