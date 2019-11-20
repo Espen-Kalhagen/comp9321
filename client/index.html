@@ -101,6 +101,9 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
 
     <script>
+      // let apiURL = "https://6d61d194-0851-49f9-b050-6e71675fa040.mock.pstmn.io"
+      let apiURL = "http://127.0.0.1:5000"
+
       var app = new Vue({
       el: '#app',
       data: {
@@ -186,9 +189,16 @@
             this.errors.push('Sales required to be positive');
           }
 
+          let numberOfSales = document.getElementById('exampleFormControlInput1').value;
+          let e = document.getElementById('exampleFormControlSelect1')
+          let region = e.options[e.selectedIndex].value
+          console.log(region)
+          console.log(numberOfSales)
+
           if(this.errors.length < 1){
             axios
               .get('https://6d61d194-0851-49f9-b050-6e71675fa040.mock.pstmn.io/rating')
+              // .get(apiURL+'/rating/'+region+'/'+numberOfSales)
               .then(response => this.handleRequest(response))
               .catch(error => this.handleError(error));
           }
