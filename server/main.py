@@ -12,7 +12,10 @@ class Rating(Resource):
     def get(self, region, sales):
         """Returns the rating."""
 
-        return {'rating': '60'}
+        # rating = getFromML(region,sales)
+        rating = 60
+
+        return {'rating': rating}
 
 @api.route('/sales/<region>/<rating>')
 @api.doc(params={'region': 'Region for sales of given video game', 'rating':'Rating for given video game'})
@@ -20,7 +23,10 @@ class Sales(Resource):
     def get(self, region, rating):
         """Returns the sales."""
 
-        return {'sales': '12345'}
+        # sales = getFromML(region, rating)
+        sales = 12345
+
+        return {'sales': sales}
 
 
 if __name__ == '__main__':
