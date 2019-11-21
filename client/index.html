@@ -33,13 +33,14 @@
 
       <div class="row">
         <div class="col-md-12">
-
-          <p v-if="errors.length">
+          <div class="alert alert-danger" role="alert" v-if="errors.length">
+          <p >
               <b>Please correct the following error(s):</b>
               <ul>
                 <li v-for="error in errors">{{ error }}</li>
               </ul>
             </p>
+          </div>
         </div>
 
           <div class="col-md-6 order-md-2 mb-6">
@@ -160,7 +161,7 @@
         clickPredictSales: function () {
           this.errors = [];
           //Error handeling
-          if (this.rating == null) {
+          if (this.rating == null|| this.sales == "") {
             this.errors.push('Rating required');
           }
           if (parseInt(this.rating) < 0 || parseInt(this.rating) > 100 ) {
@@ -182,7 +183,7 @@
 
           this.errors = [];
           //Error handeling
-          if (this.sales == null) {
+          if (this.sales == null || this.sales == "") {
             this.errors.push('Sales required');
           }
           if (parseInt(this.sales) < 0) {
