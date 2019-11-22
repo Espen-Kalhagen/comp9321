@@ -1,5 +1,8 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+
+
 
 def f(row, NA, EU, JP):
     if row['Country Name'] in NA :
@@ -13,16 +16,21 @@ def f(row, NA, EU, JP):
     return row
 
 if __name__ == '__main__':
-    file_video_game = '/Users/aarushigera/Downloads/data/Video_Games_Sales_as_at_22_Dec_2016.csv'
-    file_GDP = '/Users/aarushigera/Downloads/data/GDP.csv'
-    path = '/Users/aarushigera/Downloads/data/'
+    file_video_game = 'Video_Games_Sales_as_at_22_Dec_2016.csv'
+    file_GDP = 'GDP.csv'
+    path = ''
 
-    videogame_dataframe = pd.read_csv(file_video_game)
+    video_game_dataframe = pd.read_csv(file_video_game)
     GDP_dataframe = pd.read_csv(file_GDP, skiprows= 4)
 
-    video_game_dataframe = videogame_dataframe.drop(['Name','Platform','Critic_Score', 'Critic_Count', 'User_Score', 'User_Count',
-                                                     'Developer', 'Rating'], axis=1)
+    video_game_dataframe = video_game_dataframe.drop(['Name','Platform', 'Critic_Count', 'User_Score', 'User_Count',
+                                                     'Developer', 'Rating', 'Genre', 'Publisher','NA_Sales','EU_Sales','JP_Sales','Other_Sales'], axis=1)
     video_game_dataframe = video_game_dataframe.dropna()
+    #Maybe use one-hot encoding instead
+    #video_game_dataframe['Genre'] =  video_game_dataframe['Genre'].astype('category').cat.codes
+    #video_game_dataframe['Publisher'] =  video_game_dataframe['Publisher'].astype('category').cat.codes
+
+
 
     GDP_dataframe = GDP_dataframe.drop(GDP_dataframe.ix[:, '1960':'1993'].columns, axis = 1)
     GDP_dataframe = GDP_dataframe.dropna(axis=0, subset=GDP_dataframe.ix[:,'1994':'2018'].columns)
@@ -35,6 +43,13 @@ if __name__ == '__main__':
     GDP_dataframe['Continent'] = ""
     GDP_dataframe = GDP_dataframe.apply (lambda row: f(row, North_America, European_Union, Japan), axis=1)
 
-    video_game_dataframe.to_csv(path + 'VideoGame_Data.csv')
-    GDP_dataframe.to_csv(path + 'GDP_Data.csv')
+    GDP_dataframe = GDP_dataframe.groupby("Continent").mean()
+
+    video_game_dataframe.to_csv(path + 'VideoGame_Data.csv', index=False)
+    GDP_dataframe.to_csv(path + 'GDP_Data.csv', index=False)
+
+    plt.scatter(video_game_dataframe['Global_Sales'], video_game_dataframe['Critic_Score'], alpha=0.5)
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.show()
 
