@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 
+
+
 def generation(x):
     # collection of features
     feature_dict = {}
@@ -21,8 +23,7 @@ def generate_features():
 
     # get new generated features
     feature_collection = generation(video_game_dataframe)
-    print(feature_collection)
     result = pd.DataFrame(list(feature_collection.items()), columns= ['feature', 'value'])
-    print(result)
+    features_generated_json = result.to_json()
+    return features_generated_json
 
-generate_features()
