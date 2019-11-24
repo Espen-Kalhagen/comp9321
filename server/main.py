@@ -113,13 +113,16 @@ video_game_model = api.model('video_game', {
 
 groupByParser = reqparse.RequestParser()
 groupByParser.add_argument('category', required=True, choices=["year", "publisher", "genre", "platform", 'developer'], help="Category to group by")
-groupByParser.add_argument('sum', required=True, type=inputs.boolean, help="Whether to display sum or average")
+groupByParser.add_argument('sum', required=False, default=True, type=inputs.boolean, help="Whether to display sum or average")
 
 deleteParser = reqparse.RequestParser()
 deleteParser.add_argument('ID', required=True, type=int, help="ID of video game to delete")
 
 @api.route('/video_games')
 class VideoGames(Resource):
+    @api.response(500, 'Server Error')
+    @api.response(404, 'Incorrect groupby given')
+    @api.response(200, 'Success')
     @api.expect(groupByParser, validate=True)
     def get(self):
         """Returns the sales ($USD millions) and ratings of video games grouped by a given category"""
@@ -141,6 +144,8 @@ class VideoGames(Resource):
             column_to_groupBy = 'Platform'
         elif groupBy == 'developer':
             column_to_groupBy = 'Developer'
+        else:
+            return "Invalid groupBy provided", 404
 
         if sumBool:
             groupby_year_df = vgs_df.groupby(column_to_groupBy).sum()
@@ -156,6 +161,7 @@ class VideoGames(Resource):
     @api.response(201, 'User successfully created.')
     @api.expect(video_game_model, validate=True)
     def post(self):
+        """Adds a video game to data set"""
         video_game = request.json
 
         newID = vgs_df_global.size
@@ -173,9 +179,10 @@ class VideoGames(Resource):
 
     @api.response(500, 'Server Error')
     @api.response(404, 'Incorrect ID given')
-    @api.response(200, 'User successfully created.')
+    @api.response(200, 'User successfully deleted')
     @api.expect(deleteParser, validate=True)
     def delete(self):
+        """Deletes a video game by a given ID"""
         args = deleteParser.parse_args()
 
         ID = args.get('ID')
@@ -192,6 +199,10 @@ GDPtoSalesParser.add_argument('year', required=True, type=inputs.int_range(1980,
 GDPtoSalesParser.add_argument('country', required=True, choices=["US", "EU", "JP"], help="Region to compare")
 @api.route('/GDP_to_sales')
 class GDPtoSales(Resource):
+    @api.response(500, 'Server Error')
+    @api.response(404, 'Invalid year given')
+    @api.response(400, 'Invalid country given')
+    @api.response(200, 'Success')
     @api.expect(GDPtoSalesParser, validate=True)
     def get(self):
         """Returns the percentage of GDP that the video game sales made up"""
@@ -216,11 +227,13 @@ class GDPtoSales(Resource):
             elif country == "JP":
                 VG_Sales = vgs_df.at[int(year), 'JP_Sales']*1000000
                 GDP = gdp_df.at['JPN',str(year)]
+            else:
+                return 'Invalid country given', 400
         except KeyError:
             print ('-'*60)
             traceback.print_exc(file=sys.stdout)
             print ('-'*60)
-            abort(400, 'Invalid year')
+            return 'Invalid year given or unavaliable GDP information about year', 404
 
         packet = {
             'percentage' : (VG_Sales/GDP*100),
