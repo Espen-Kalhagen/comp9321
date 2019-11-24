@@ -114,11 +114,8 @@ groupByParser = reqparse.RequestParser()
 groupByParser.add_argument('category', required=True, choices=["year", "publisher", "genre", "platform", 'developer'], help="Category to group by")
 groupByParser.add_argument('sum', required=False, default=True, type=inputs.boolean, help="Whether to display sum or average")
 
-deleteParser = reqparse.RequestParser()
-deleteParser.add_argument('ID', required=True, type=int, help="ID of video game to delete")
-
-@api.route('/video_games')
-class VideoGames(Resource):
+@api.route('/groupby')
+class GroupBy(Resource):
     @api.response(500, 'Server Error')
     @api.response(404, 'Incorrect groupby given')
     @api.response(200, 'Success')
@@ -155,6 +152,26 @@ class VideoGames(Resource):
 
         return groupby_year_df.to_dict(), 200
 
+idParser = reqparse.RequestParser()
+idParser.add_argument('ID', required=True, type=int, help="ID of video game")
+
+@api.route('/video_game')
+class VideoGames(Resource):
+    @api.response(500, 'Server Error')
+    @api.response(404, 'Invalid ID given')
+    @api.response(200, 'Success')
+    @api.expect(idParser, validate=True)
+    def get(self):
+        """Returns a video game given by an ID"""
+        args = idParser.parse_args()
+        ID = args.get('ID')
+        try:
+            temp = vgs_df_global.loc[int(ID)].to_dict()
+        except KeyError:
+            return "Invalid ID given", 404
+
+        return str(temp), 200
+
     @api.response(500, 'Server Error')
     @api.response(400, 'Validation Error')
     @api.response(201, 'User successfully created.')
@@ -179,10 +196,10 @@ class VideoGames(Resource):
     @api.response(500, 'Server Error')
     @api.response(404, 'Incorrect ID given')
     @api.response(200, 'User successfully deleted')
-    @api.expect(deleteParser, validate=True)
+    @api.expect(idParser, validate=True)
     def delete(self):
         """Deletes a video game by a given ID"""
-        args = deleteParser.parse_args()
+        args = idParser.parse_args()
 
         ID = args.get('ID')
 
