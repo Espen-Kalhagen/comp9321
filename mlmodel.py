@@ -41,15 +41,15 @@ critic_model.add(Dense(32, input_dim=NUM_COLUMNS, activation='relu'))
 critic_model.add(Dense(32, activation='relu'))
 critic_model.add(Dense(32, activation='relu'))
 critic_model.add(Dense(32, activation='relu'))
-critic_model.add(Dense(1, activation='relu'))
+critic_model.add(Dense(1))
 
 critic_model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['mae'])
 
 hist = critic_model.fit(X_train, Y_train, epochs=150, validation_split=0.1)
 
-print(X_val[0])
-result = critic_model.predict(X_val[0:1])
-print(result)
+#print(X_val[0])
+#result = critic_model.predict(X_val[0:1])
+#print(result)
 
 #Save model
 critic_model_json = critic_model.to_json()
@@ -77,15 +77,15 @@ sales_model.add(Dense(32, input_dim=NUM_COLUMNS, activation='relu'))
 sales_model.add(Dense(32, activation='relu'))
 sales_model.add(Dense(32, activation='relu'))
 sales_model.add(Dense(32, activation='relu'))
-sales_model.add(Dense(1, activation='relu'))
+sales_model.add(Dense(1))
 
 sales_model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['mae'])
 
 hist = sales_model.fit(X_train, Y_train, epochs=150, validation_split=0.1)
 
-print(X_val[0])
-result = sales_model.predict(X_val[0:1])
-print(result)
+#print(X_val[0])
+#result = sales_model.predict(X_val[0:1])
+#print(result)
 
 #Save model
 sales_model_json = sales_model.to_json()

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 
 
+
 def f(row, NA, EU, JP):
     if row['Country Name'] in NA :
         row['Continent'] = 'NA'
@@ -31,10 +32,10 @@ def normalize(df):
 if __name__ == '__main__':
     file_video_game = 'Video_Games_Sales_as_at_22_Dec_2016.csv'
     file_GDP = 'GDP.csv'
-    path = ''
+    path = '../'
 
-    video_game_dataframe = pd.read_csv(file_video_game)
-    GDP_dataframe = pd.read_csv(file_GDP, skiprows= 4)
+    video_game_dataframe = pd.read_csv(path+file_video_game)
+    GDP_dataframe = pd.read_csv(path+file_GDP, skiprows= 4)
 
     video_game_dataframe = video_game_dataframe.drop(['Name', 'Critic_Count', 'User_Score', 'User_Count',
                                                      'Developer', 'Rating', 'Genre', 'Publisher', "Global_Sales"], axis=1)
@@ -87,6 +88,11 @@ if __name__ == '__main__':
     #Rearrange
     video_game_dataframe = video_game_dataframe[["Platform","Year_of_Release","GDP","Region","Sales","Critic_Score"]]
 
+    #Make into number and save numbers so we can use them to tanslate request text
+    platform_codes = pd.DataFrame({"platform":video_game_dataframe["Platform"],"code":pd.Categorical(video_game_dataframe["Platform"]).codes})
+    region_codes = pd.DataFrame({"region":video_game_dataframe["Region"],"code":pd.Categorical(video_game_dataframe["Region"]).codes})
+    platform_codes.drop_duplicates().to_csv(path+"platform_codes.csv",index=False)
+    region_codes.drop_duplicates().to_csv(path+"region_codes.csv",index=False)
     video_game_dataframe['Platform'] = pd.Categorical(video_game_dataframe["Platform"]).codes
     video_game_dataframe['Region'] = pd.Categorical(video_game_dataframe["Region"]).codes
 
@@ -99,5 +105,6 @@ if __name__ == '__main__':
     video_game_dataframe.to_csv(path + 'VideoGame_Data.csv', index=False)
     print("Preprosessed files")
 
-    #GDP_dataframe.to_csv(path + 'GDP_Data.csv', index=False)
+    GDP_dataframe.index.name = 'year'
+    GDP_dataframe.to_csv(path + 'GDP_Data.csv')
 

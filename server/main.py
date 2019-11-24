@@ -2,9 +2,13 @@ from flask import Flask, abort, jsonify, request
 from flask_restplus import Resource, Api, fields, reqparse, inputs
 import numpy as np
 import sys, traceback
-from security import *
 
 import pandas as pd
+
+from flask import Flask
+from flask_restplus import Resource, Api, fields, Namespace
+from server.security import *
+from server.ns_prediction import api as ns_prediction
 
 app = Flask(__name__)
 app.app_context().push()
@@ -15,7 +19,7 @@ vgs_csv_file = '../Video_Games_Sales_as_at_22_Dec_2016.csv'
 vgs_df_global = pd.read_csv(vgs_csv_file)
 
 gdp_csv_file = '../GDP.csv'
-gdp_df_global = pd.read_csv(gdp_csv_file)
+gdp_df_global = pd.read_csv(gdp_csv_file, skiprows= 4)
 
 def clean_vgs_df():
     global vgs_df_global
@@ -27,6 +31,8 @@ def clean_vgs_df():
         lambda x: int(x) if not pd.isna(x) else np.nan)
 
 clean_vgs_df()
+
+api.add_namespace(ns_prediction)
 
 ns_security = api.namespace('security', description='Authorization and API key management')
 
@@ -191,6 +197,7 @@ class VideoGames(Resource):
 
         newID = vgs_df_global.size
 
+
         return {"message": "Video Game {} is created".format(newID)}, 201
 
     @api.response(500, 'Server Error')
@@ -259,38 +266,6 @@ class GDPtoSales(Resource):
 
         return packet, 200
 
-#Redundant Now?
-# @api.route('/rating/<region>/<sales>')
-# @api.doc(params={'region': 'Region for sales of given video game', 'sales':'Sales for given video game'})
-# class Rating(Resource):
-#     def get(self, region, sales):
-#         """Returns the rating."""
-
-#         # rating = getFromML(region,sales)
-#         rating = 60
-
-#         return {'rating': rating}
-
-#Redundant Now?
-# @api.route('/sales/<region>/<rating>')
-# @api.doc(params={'region': 'Region for sales of given video game', 'rating':'Rating for given video game'})
-# class Sales(Resource):
-#     def get(self, region, rating):
-#         """Returns the sales."""
-
-#         # sales = getFromML(region, rating)
-#         sales = 12345
-
-#         return {'sales': sales}
-
-
-# @api.route('/test')
-# class Test(Resource):
-
-#     @key_required
-#     def get(self):
-#         """Returns a test message."""
-#         return {'test': 'ok'}
 
 
 if __name__ == '__main__':
