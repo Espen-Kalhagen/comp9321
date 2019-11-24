@@ -266,6 +266,10 @@ class GDPtoSales(Resource):
 
         return packet, 200
 
+@app.after_request
+def apply_caching(response):
+    response.headers.set('Access-Control-Allow-Origin', '*')
+    return response
 
 
 if __name__ == '__main__':

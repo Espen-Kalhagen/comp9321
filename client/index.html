@@ -46,15 +46,20 @@
           <div class="col-md-6 order-md-2 mb-6">
             <h3>Predict rating</h3>
               <div class="form-group">
-                <label for="exampleFormControlInput1">Number of sales</label>
-                <input v-model="sales" type="number" class="form-control" id="exampleFormControlInput1" placeholder="150000">
+                <label for="exampleFormControlInput1">Number of sales in millions</label>
+                <input v-model="sales" type="number" class="form-control" id="exampleFormControlInput1" placeholder="0-40">
+              </div>
+              <div class="form-group">
+                  <label for="exampleFormControlInput2">Year released</label>
+                  <input v-model="year1" type="number" class="form-control" id="exampleFormControlInput2"  placeholder="1950-2019">
               </div>
               <div class="form-group">
                 <label for="exampleFormControlSelect1">Select region</label>
                 <select v-model="region1" class="form-control" id="exampleFormControlSelect1">
-                  <option>United States</option>
-                  <option>Europe</option>
-                  <option>Japan</option>
+                  <option>NA</option>
+                  <option>EU</option>
+                  <option>JP</option>
+                  <option>Others</option>
 
                 </select>
               </div>
@@ -68,12 +73,16 @@
                   <input v-model="rating" type="number" class="form-control" id="exampleFormControlInput1"  placeholder="0-100">
                 </div>
                 <div class="form-group">
+                  <label for="exampleFormControlInput2">Year released</label>
+                  <input v-model="year2" type="number" class="form-control" id="exampleFormControlInput2"  placeholder="1950-2019">
+                </div>
+                <div class="form-group">
                   <label for="exampleFormControlSelect1">Select region</label>
                   <select v-model="region2" class="form-control" id="exampleFormControlSelect1">
-                    <option>United States</option>
-                    <option>Europe</option>
-                    <option>Japan</option>
-    
+                  <option>NA</option>
+                  <option>EU</option>
+                  <option>JP</option>
+                  <option>Others</option>
                   </select>
                 </div>
                 
@@ -108,11 +117,13 @@
       var app = new Vue({
       el: '#app',
       data: {
-        sales:undefined,
-        region1:"United States",
-        rating:undefined,
-        region2:"United States",
-        errors:[],  
+          sales:undefined,
+          region1:"NA",
+          year1:undefined,
+          rating:undefined,
+          region2:"NA",
+          year2:undefined,
+          errors:[],
 
       },
       methods: {
@@ -120,7 +131,7 @@
           result = response.data;
           
           //Request not successfull
-          if(response.status != 200){
+          if(response.status > 250){
             Swal.fire({
               title: '<strong>Unable to predict</strong>',
               icon: 'error',
@@ -171,7 +182,7 @@
 
           if(this.errors.length < 1){
             axios
-              .get('https://6d61d194-0851-49f9-b050-6e71675fa040.mock.pstmn.io/sal')
+              .get(apiURL+"/predict/sales?year="+this.year2+"&region="+this.region2+"&rating="+this.rating)
               .then(response => this.handleRequest(response))
               .catch(error => this.handleError(error));
 
@@ -186,7 +197,7 @@
           if (this.sales == null || this.sales == "") {
             this.errors.push('Sales required');
           }
-          if (parseInt(this.sales) < 0) {
+          if (parseInt(this.sales) < 0 || parseInt(this.sales) > 40) {
             this.errors.push('Sales required to be positive');
           }
 
@@ -198,8 +209,7 @@
 
           if(this.errors.length < 1){
             axios
-              .get('https://6d61d194-0851-49f9-b050-6e71675fa040.mock.pstmn.io/rating')
-              // .get(apiURL+'/rating/'+region+'/'+numberOfSales)
+              .get(apiURL+"/predict/rating?year="+this.year1+"&region="+this.region1+"&sales="+this.sales)
               .then(response => this.handleRequest(response))
               .catch(error => this.handleError(error));
           }
