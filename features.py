@@ -17,6 +17,14 @@ def generation(x):
         feature_dict['median_Sales'] = statistics.median(x['Sales'])
         feature_dict['abs_std_Sales'] = np.abs(x['Sales']).std()
         feature_dict['skewness_Sales'] = stats.skew(x['Sales'])
+
+        feature_dict['abs_max_Critic_Score'] = max(np.abs(x['Critic_Score']))
+        feature_dict['abs_min_Critic_Score'] = min(np.abs(x['Critic_Score']))
+        feature_dict['range_Critic_Score'] = feature_dict['abs_max_Critic_Score'] - feature_dict['abs_min_Critic_Score']
+        feature_dict['abs_mean_Critic_Score'] = np.mean(np.abs(x['Critic_Score']))
+        feature_dict['median_Critic_Score'] = statistics.median(x['Critic_Score'])
+        feature_dict['abs_std_Critic_Score'] = np.abs(x['Critic_Score']).std()
+        feature_dict['skewness_Critic_Score'] = stats.skew(x['Critic_Score'])
     except:
         print('error handle')
     return feature_dict
