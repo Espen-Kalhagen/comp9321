@@ -1,3 +1,5 @@
+import secrets
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 import jwt
@@ -17,6 +19,24 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(50), unique=True)
     password_hash = db.Column(db.String(60))
+
+
+class Key(db.Model):
+    __tablename__ = "key"
+
+    key = db.Column(db.String(60), primary_key=True, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+
+class Usage(db.Model):
+    __tablename__ = "usage"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    key_id = db.Column(db.String(60), db.ForeignKey('key.key'), nullable=False)
+    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+    endpoint = db.Column(db.String(60))
+    method = db.Column(db.String(60))
 
 
 def auth_init(app):
@@ -130,6 +150,30 @@ def get_logged_in_user(new_request):
         return invalid_resp
 
 
+def create_key(user_id):
+    key_exists = True
+    while key_exists:
+        secret = secrets.token_urlsafe(32)
+        found_key = Key.query.filter_by(key=secret).first()
+        if not found_key:
+            key_exists = False
+
+    new_key = Key(
+        key=secret,
+        user_id=user_id
+    )
+    save_changes(new_key)
+    return secret
+
+
+def delete_key(user_id, key):
+    return Key.query.filter_by(user_id=user_id).filter_by(key=key).delete()
+
+
+def get_keys(user_id):
+    return Key.query.filter_by(user_id=user_id).all()
+
+
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -141,5 +185,26 @@ def token_required(f):
             return data, status
 
         return f(*args, **kwargs)
+
+    return decorated
+
+
+def key_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+
+        response_fail = {
+            'status': 'fail',
+            'message': 'Provide a valid api key.'
+        }, 401
+
+        api_key = request.headers.get('X-API-KEY')
+        if api_key:
+            key = Key.query.filter_by(key=api_key).first()
+            if not key:
+                return response_fail
+            return f(*args, **kwargs)
+        else:
+            return response_fail
 
     return decorated
