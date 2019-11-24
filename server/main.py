@@ -1,6 +1,7 @@
-from flask import Flask
+from flask import Flask, abort
 from flask_restplus import Resource, Api, fields, reqparse
 import numpy as np
+import sys, traceback
 # from security import *
 
 import pandas as pd
@@ -11,13 +12,18 @@ app.app_context().push()
 api = Api(app)
 
 vgs_csv_file = '../Video_Games_Sales_as_at_22_Dec_2016.csv'
-vgs_df = pd.read_csv(vgs_csv_file)
+vgs_df_global = pd.read_csv(vgs_csv_file)
+
+gdp_csv_file = '../GDP.csv'
+gdp_df_global = pd.read_csv(gdp_csv_file)
 
 def clean_vgs_df():
-    global vgs_df
-    vgs_df = vgs_df[np.isfinite(vgs_df['Year_of_Release'])]
+    global vgs_df_global
+    global gdp_df_global
 
-    vgs_df['Year_of_Release'] = vgs_df['Year_of_Release'].apply(
+    vgs_df_global = vgs_df_global[np.isfinite(vgs_df_global['Year_of_Release'])]
+
+    vgs_df_global['Year_of_Release'] = vgs_df_global['Year_of_Release'].apply(
         lambda x: int(x) if not pd.isna(x) else np.nan)
 
 clean_vgs_df()
@@ -33,6 +39,24 @@ clean_vgs_df()
 #     'key': fields.String(required=True, description='API key')
 # })
 
+video_game_model = api.model('key', {
+    'Name' : fields.String(required=True, description='Name of video game'),
+    'Platform' : fields.String(required=False, description='Platform of video game'),
+    'Year_of_Release' : fields.Integer(required=True, description='Year of video game\'s release'),
+    'Genre' : fields.String(required=False, description='Genre of video game'),
+    'Publisher' : fields.String(required=False, description='Publisher of video game'),
+    'NA_Sales' : fields.Float(required=True, description='North American sales of video game'),
+    'EU_Sales' : fields.Float(required=True, description='European Union sales of video game'),
+    'JP_Sales' : fields.Float(required=True, description='Japanese sales of video game'),
+    'Other_Sales' : fields.Float(required=True, description='Other countries sales of video game'),
+    'Global_Sales' : fields.Float(required=True, description='Global sales of video game'),
+    'Critic_Score' : fields.Float(required=True, description='Critical score of video game'),
+    'Critic_Count' : fields.Integer(required=True, description='Critic count of video game'),
+    'User_Score' : fields.Float(required=True, description='User score of video game'),
+    'User_Count' : fields.Integer(required=True, description='User count of video game'),
+    'Developer' : fields.String(required=False, description='Developer of video game'),
+    'Rating' : fields.String(required=False, description='Rating of video game')
+})
 
 # @ns_security.route('/login')
 # class UserLogin(Resource):
@@ -92,11 +116,12 @@ groupByParser.add_argument('category', required=True, default="year", choices=["
 @api.doc(params={'category': 'Category to group by, i.e. [year, publisher]'})
 class GroupBy(Resource):
     def get(self):
+        vgs_df = vgs_df_global.copy(deep=True)
+
         args = groupByParser.parse_args()
 
         # retrieve the query parameters
         groupBy = args.get('category')
-
 
         if groupBy == "year":
             groupby_year_df = vgs_df.groupby('Year_of_Release').mean()
@@ -107,6 +132,50 @@ class GroupBy(Resource):
 
         return groupby_year_df.to_dict()
 
+GDPtoSalesParser = reqparse.RequestParser()
+GDPtoSalesParser.add_argument('year', required=False, default=2000)
+GDPtoSalesParser.add_argument('country', required=False, default="US", choices=["US", "EU", "JP"])
+@api.route('/GDP_to_sales')
+@api.doc(params={'year' : 'Year to compare', 'country' : 'Country to compare, i.e US (United Stares), EU (European Union), JP (Japan)'})
+class GDPtoSales(Resource):
+    def get(self):
+        """Returns the percentage of GDP that the video game sales made up"""
+        gdp_df = gdp_df_global.copy(deep=True) 
+        vgs_df = vgs_df_global.copy(deep=True)
+
+        args = GDPtoSalesParser.parse_args()
+
+        country = args.get('country')
+        year = args.get('year')
+
+        gdp_df = gdp_df.set_index('Country Code')
+        vgs_df = vgs_df.groupby('Year_of_Release').sum()
+
+        try:
+            if country == "US":
+                VG_Sales = vgs_df.at[int(year), 'NA_Sales']*1000000
+                GDP = gdp_df.at['USA',str(year)]
+            elif country == "EU":
+                VG_Sales = vgs_df.at[int(year), 'EU_Sales']*1000000
+                GDP = gdp_df.at['EUU',str(year)]
+            elif country == "JP":
+                VG_Sales = vgs_df.at[int(year), 'JP_Sales']*1000000
+                GDP = gdp_df.at['JPN',str(year)]
+        except KeyError:
+            print ('-'*60)
+            traceback.print_exc(file=sys.stdout)
+            print ('-'*60)
+            abort(400, 'Invalid year')
+
+        return {
+            'percentage' : (VG_Sales/GDP*100),
+            'sales' : VG_Sales,
+            'GDP' : GDP
+        }
+
+#to put into video games
+    # @api.response(201, 'User successfully created.')
+    # @api.expect(video_game_model, validate=True)
 
 
 @api.route('/rating/<region>/<sales>')
