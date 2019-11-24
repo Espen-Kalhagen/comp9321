@@ -1,4 +1,4 @@
-from flask import Flask, abort, jsonify
+from flask import Flask, abort, jsonify, request
 from flask_restplus import Resource, Api, fields, reqparse, inputs
 import numpy as np
 import sys, traceback
@@ -39,7 +39,7 @@ clean_vgs_df()
 #     'key': fields.String(required=True, description='API key')
 # })
 
-video_game_model = api.model('key', {
+video_game_model = api.model('video_game', {
     'Name' : fields.String(required=True, description='Name of video game'),
     'Platform' : fields.String(required=False, description='Platform of video game'),
     'Year_of_Release' : fields.Integer(required=True, description='Year of video game\'s release'),
@@ -110,11 +110,16 @@ video_game_model = api.model('key', {
 #         user_id = data.get("data").get("user_id")
 #         return delete_key(user_id, key)
 
+
 groupByParser = reqparse.RequestParser()
-groupByParser.add_argument('category', required=True, choices=["year", "publisher", "genre", "platform"], help="Category to group by")
+groupByParser.add_argument('category', required=True, choices=["year", "publisher", "genre", "platform", 'developer'], help="Category to group by")
 groupByParser.add_argument('sum', required=True, type=inputs.boolean, help="Whether to display sum or average")
-@api.route('/groupby')
-class GroupBy(Resource):
+
+deleteParser = reqparse.RequestParser()
+deleteParser.add_argument('ID', required=True, type=int, help="ID of video game to delete")
+
+@api.route('/video_games')
+class VideoGames(Resource):
     @api.expect(groupByParser, validate=True)
     def get(self):
         """Returns the sales ($USD millions) and ratings of video games grouped by a given category"""
@@ -134,6 +139,8 @@ class GroupBy(Resource):
             column_to_groupBy = 'Genre'
         elif groupBy == "platform":
             column_to_groupBy = 'Platform'
+        elif groupBy == 'developer':
+            column_to_groupBy = 'Developer'
 
         if sumBool:
             groupby_year_df = vgs_df.groupby(column_to_groupBy).sum()
@@ -142,9 +149,43 @@ class GroupBy(Resource):
 
         groupby_year_df = groupby_year_df[["Global_Sales", "Critic_Score"]]
 
-        resp = jsonify(groupby_year_df.to_dict())
-        resp.status_code = 200
-        return resp
+        return groupby_year_df.to_dict(), 200
+
+    @api.response(500, 'Server Error')
+    @api.response(400, 'Validation Error')
+    @api.response(201, 'User successfully created.')
+    @api.expect(video_game_model, validate=True)
+    def post(self):
+        video_game = request.json
+
+        newID = vgs_df_global.size
+
+        # Put the values into the dataframe
+        for key in video_game:
+            if key not in video_game_model.keys():
+                return {"message": "Property {} is invalid".format(key)}, 400
+
+            vgs_df_global.loc[newID, key] = video_game[key]
+
+        newID = vgs_df_global.size
+
+        return {"message": "Video Game {} is created".format(newID)}, 201
+
+    @api.response(500, 'Server Error')
+    @api.response(404, 'Incorrect ID given')
+    @api.response(200, 'User successfully created.')
+    @api.expect(deleteParser, validate=True)
+    def delete(self):
+        args = deleteParser.parse_args()
+
+        ID = args.get('ID')
+
+        if ID not in vgs_df_global.index:
+            api.abort(404, "Video game {} doesn't exist".format(ID))
+
+        vgs_df_global.drop(ID, inplace=True)
+        return {"message": "Video game {} is removed.".format(ID)}, 200
+
 
 GDPtoSalesParser = reqparse.RequestParser()
 GDPtoSalesParser.add_argument('year', required=True, type=inputs.int_range(1980,2018), help="Year to compare, between 1980-2018")
@@ -187,15 +228,7 @@ class GDPtoSales(Resource):
             'GDP' : GDP
         }
 
-        resp = jsonify(packet)
-        resp.status_code = 200
-
-        return resp
-
-#to put into video games
-    # @api.response(201, 'User successfully created.')
-    # @api.expect(video_game_model, validate=True)
-
+        return packet, 200
 
 @api.route('/rating/<region>/<sales>')
 @api.doc(params={'region': 'Region for sales of given video game', 'sales':'Sales for given video game'})
