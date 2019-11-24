@@ -87,6 +87,7 @@ if __name__ == '__main__':
 
     #Rearrange
     video_game_dataframe = video_game_dataframe[["Platform","Year_of_Release","GDP","Region","Sales","Critic_Score"]]
+    video_game_dataframe.to_csv(path + 'VideoGame_Data_without_normalisation.csv', index=False)
 
     #Make into number and save numbers so we can use them to tanslate request text
     platform_codes = pd.DataFrame({"platform":video_game_dataframe["Platform"],"code":pd.Categorical(video_game_dataframe["Platform"]).codes})
