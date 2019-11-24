@@ -1,79 +1,41 @@
 from flask import Flask
 from flask_restplus import Resource, Api, fields
 from server.security import *
+from server.ns_security import api as ns_security
+from server.ns_analytics import api as ns_analytics
+
+authorization = {
+    'apikey': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'X-API-KEY'
+    }
+}
 
 app = Flask(__name__)
+app.config.setdefault('RESTPLUS_MASK_SWAGGER', False)
 app.app_context().push()
 auth_init(app)
-api = Api(app)
+api = Api(app,
+          title='Predict-a-thon',
+          version='1.0',
+          description="The goal of this API is to help users, developers and publishers understand rating and sales of"
+                      "games through correlation using deep learning and data aggregation.",
+          authorizations=authorization,
+          security='apikey')
 
-ns_security = api.namespace('security', description='Authorization and API key management')
+api.add_namespace(ns_security)
+api.add_namespace(ns_analytics)
 
-user_model = api.model('user', {
-    'username': fields.String(required=True, description='user username'),
-    'password': fields.String(required=True, description='user password')
-})
-
-key_model = api.model('key', {
-    'key': fields.String(required=True, description='API key')
-})
-
-
-@ns_security.route('/login')
-class UserLogin(Resource):
-    """
-        User Login Resource
-    """
-    @api.doc('user login')
-    @api.expect(user_model, validate=True)
-    def post(self):
-        """Returns a bearer token after successful authentication."""
-        post_data = request.json
-        return login_user(data=post_data)
-
-
-@ns_security.route('/users')
-class UserList(Resource):
-    @api.response(201, 'User successfully created.')
-    @api.expect(user_model, validate=True)
-    def post(self):
-        """Creates a new User """
-        data = request.json
-        return save_new_user(data=data)
-
-
-@ns_security.route('/keys')
-class KeyList(Resource):
-
-    @token_required
-    def post(self):
-        """Create a new api key"""
-        data, _ = get_logged_in_user(request)
-        user_id = data.get("data").get("user_id")
-        key = create_key(user_id)
-        return {
-                   "message": "Key successfully created.",
-                   "data": {"key": key}
-               }, 201
-
-    @token_required
-    @api.marshal_list_with(key_model, envelope="data")
-    def get(self):
-        """Get all api keys for the logged in user"""
-        data, _ = get_logged_in_user(request)
-        user_id = data.get("data").get("user_id")
-        return get_keys(user_id)
-
-    @token_required
-    def delete(self, key):
-        """Remove a certain api key"""
-        data, _ = get_logged_in_user(request)
-        user_id = data.get("data").get("user_id")
-        return delete_key(user_id, key)
+key_parser = api.parser()
+key_parser.add_argument('API Key', type='str',
+                        location='headers',
+                        help='API key',
+                        required=True)
 
 
 @api.route('/rating/<region>/<sales>')
-@api.doc(params={'region': 'Region for sales of given video game', 'sales':'Sales for given video game'})
+@api.doc(params={'region': 'Region for sales of given video game', 'sales': 'Sales for given video game'})
 class Rating(Resource):
     def get(self, region, sales):
         """Returns the rating."""
@@ -85,7 +47,7 @@ class Rating(Resource):
 
 
 @api.route('/sales/<region>/<rating>')
-@api.doc(params={'region': 'Region for sales of given video game', 'rating':'Rating for given video game'})
+@api.doc(params={'region': 'Region for sales of given video game', 'rating': 'Rating for given video game'})
 class Sales(Resource):
     def get(self, region, rating):
         """Returns the sales."""
@@ -100,6 +62,7 @@ class Sales(Resource):
 class Test(Resource):
 
     @key_required
+    @track_usage
     def get(self):
         """Returns a test message."""
         return {'test': 'ok'}
