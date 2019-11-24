@@ -1,5 +1,5 @@
-from flask import Flask, abort
-from flask_restplus import Resource, Api, fields, reqparse
+from flask import Flask, abort, jsonify
+from flask_restplus import Resource, Api, fields, reqparse, inputs
 import numpy as np
 import sys, traceback
 # from security import *
@@ -111,36 +111,50 @@ video_game_model = api.model('key', {
 #         return delete_key(user_id, key)
 
 groupByParser = reqparse.RequestParser()
-groupByParser.add_argument('category', required=True, default="year", choices=["year", "publisher"], help="Category must be year or publisher")
+groupByParser.add_argument('category', required=True, choices=["year", "publisher", "genre", "platform"], help="Category to group by")
+groupByParser.add_argument('sum', required=True, type=inputs.boolean, help="Whether to display sum or average")
 @api.route('/groupby')
-@api.doc(params={'category': 'Category to group by, i.e. [year, publisher]'})
 class GroupBy(Resource):
+    @api.expect(groupByParser, validate=True)
     def get(self):
+        """Returns the sales ($USD millions) and ratings of video games grouped by a given category"""
         vgs_df = vgs_df_global.copy(deep=True)
 
         args = groupByParser.parse_args()
 
         # retrieve the query parameters
         groupBy = args.get('category')
+        sumBool = args.get('sum')
 
         if groupBy == "year":
-            groupby_year_df = vgs_df.groupby('Year_of_Release').mean()
-            groupby_year_df = groupby_year_df[["Global_Sales", "Critic_Score"]]
+            column_to_groupBy = 'Year_of_Release'
         elif groupBy == "publisher":
-            groupby_year_df = vgs_df.groupby('Publisher').mean()
-            groupby_year_df = groupby_year_df[["Global_Sales", "Critic_Score"]]
+            column_to_groupBy = 'Publisher'
+        elif groupBy == "genre":
+            column_to_groupBy = 'Genre'
+        elif groupBy == "platform":
+            column_to_groupBy = 'Platform'
 
-        return groupby_year_df.to_dict()
+        if sumBool:
+            groupby_year_df = vgs_df.groupby(column_to_groupBy).sum()
+        else:
+            groupby_year_df = vgs_df.groupby(column_to_groupBy).sum()
+
+        groupby_year_df = groupby_year_df[["Global_Sales", "Critic_Score"]]
+
+        resp = jsonify(groupby_year_df.to_dict())
+        resp.status_code = 200
+        return resp
 
 GDPtoSalesParser = reqparse.RequestParser()
-GDPtoSalesParser.add_argument('year', required=False, default=2000)
-GDPtoSalesParser.add_argument('country', required=False, default="US", choices=["US", "EU", "JP"])
+GDPtoSalesParser.add_argument('year', required=True, type=inputs.int_range(1980,2018), help="Year to compare, between 1980-2018")
+GDPtoSalesParser.add_argument('country', required=True, choices=["US", "EU", "JP"], help="Region to compare")
 @api.route('/GDP_to_sales')
-@api.doc(params={'year' : 'Year to compare', 'country' : 'Country to compare, i.e US (United Stares), EU (European Union), JP (Japan)'})
 class GDPtoSales(Resource):
+    @api.expect(GDPtoSalesParser, validate=True)
     def get(self):
         """Returns the percentage of GDP that the video game sales made up"""
-        gdp_df = gdp_df_global.copy(deep=True) 
+        gdp_df = gdp_df_global.copy(deep=True)
         vgs_df = vgs_df_global.copy(deep=True)
 
         args = GDPtoSalesParser.parse_args()
@@ -167,11 +181,16 @@ class GDPtoSales(Resource):
             print ('-'*60)
             abort(400, 'Invalid year')
 
-        return {
+        packet = {
             'percentage' : (VG_Sales/GDP*100),
             'sales' : VG_Sales,
             'GDP' : GDP
         }
+
+        resp = jsonify(packet)
+        resp.status_code = 200
+
+        return resp
 
 #to put into video games
     # @api.response(201, 'User successfully created.')
