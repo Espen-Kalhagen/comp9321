@@ -15,6 +15,19 @@ def f(row, NA, EU, JP):
         row['Continent'] = 'Others'
     return row
 
+def normalize(df):
+    result = df.copy()
+    scaling = pd.DataFrame(index=df.columns,columns=["max","min"])
+    for feature_name in df.columns:
+        max_value = df[feature_name].max()
+        min_value = df[feature_name].min()
+        scaling["max"][feature_name] = max_value
+        scaling["min"][feature_name] = min_value
+        result[feature_name] = (df[feature_name] - min_value) / (max_value - min_value)
+    scaling.index.name = 'feature'
+    scaling.to_csv(path+'scaling.csv')
+    return result
+
 if __name__ == '__main__':
     file_video_game = 'Video_Games_Sales_as_at_22_Dec_2016.csv'
     file_GDP = 'GDP.csv'
@@ -23,8 +36,10 @@ if __name__ == '__main__':
     video_game_dataframe = pd.read_csv(file_video_game)
     GDP_dataframe = pd.read_csv(file_GDP, skiprows= 4)
 
-    video_game_dataframe = video_game_dataframe.drop(['Name','Platform', 'Critic_Count', 'User_Score', 'User_Count',
-                                                     'Developer', 'Rating', 'Genre', 'Publisher','NA_Sales','EU_Sales','JP_Sales','Other_Sales'], axis=1)
+    video_game_dataframe = video_game_dataframe.drop(['Name', 'Critic_Count', 'User_Score', 'User_Count',
+                                                     'Developer', 'Rating', 'Genre', 'Publisher', "Global_Sales"], axis=1)
+    #'NA_Sales','EU_Sales','JP_Sales','Other_Sales'
+
     video_game_dataframe = video_game_dataframe.dropna()
     #Maybe use one-hot encoding instead
     #video_game_dataframe['Genre'] =  video_game_dataframe['Genre'].astype('category').cat.codes
@@ -44,12 +59,45 @@ if __name__ == '__main__':
     GDP_dataframe = GDP_dataframe.apply (lambda row: f(row, North_America, European_Union, Japan), axis=1)
 
     GDP_dataframe = GDP_dataframe.groupby("Continent").mean()
+    GDP_dataframe = GDP_dataframe.transpose()
+    GDP_dataframe.index = GDP_dataframe.index.astype("float")
+
+
+
+    # Create a row for each instance of NA, EU, JP and others to be abel to train on aera as a feature
+    video_game_dataframe = video_game_dataframe.join(GDP_dataframe, on='Year_of_Release')
+
+    eu_dataframe = video_game_dataframe.drop(["JP","NA","Others","NA_Sales","JP_Sales","Other_Sales"], axis=1)
+    jp_dataframe = video_game_dataframe.drop(["EU", "NA", "Others", "NA_Sales", "EU_Sales", "Other_Sales"], axis=1)
+    na_dataframe = video_game_dataframe.drop(["JP", "EU", "Others", "JP_Sales", "EU_Sales", "Other_Sales"], axis=1)
+    others_dataframe = video_game_dataframe.drop(["JP", "EU", "NA", "JP_Sales", "EU_Sales", "NA_Sales"], axis=1)
+
+    eu_dataframe = eu_dataframe.rename(columns={"EU": "GDP", "EU_Sales": "Sales"})
+    jp_dataframe = jp_dataframe.rename(columns={"JP": "GDP", "JP_Sales": "Sales"})
+    na_dataframe = na_dataframe.rename(columns={"NA": "GDP", "NA_Sales": "Sales"})
+    others_dataframe = others_dataframe.rename(columns={"Others": "GDP", "Other_Sales": "Sales"})
+
+    eu_dataframe["Region"] = "EU"
+    jp_dataframe["Region"] = "JP"
+    na_dataframe["Region"] = "NA"
+    others_dataframe["Region"] = "Others"
+
+    video_game_dataframe = pd.concat([eu_dataframe,jp_dataframe,na_dataframe,others_dataframe])
+
+    #Rearrange
+    video_game_dataframe = video_game_dataframe[["Platform","Year_of_Release","GDP","Region","Sales","Critic_Score"]]
+
+    video_game_dataframe['Platform'] = pd.Categorical(video_game_dataframe["Platform"]).codes
+    video_game_dataframe['Region'] = pd.Categorical(video_game_dataframe["Region"]).codes
+
+
+    video_game_dataframe = normalize(video_game_dataframe)
+
+    video_game_dataframe = video_game_dataframe.dropna()
+
 
     video_game_dataframe.to_csv(path + 'VideoGame_Data.csv', index=False)
-    GDP_dataframe.to_csv(path + 'GDP_Data.csv', index=False)
+    print("Preprosessed files")
 
-    plt.scatter(video_game_dataframe['Global_Sales'], video_game_dataframe['Critic_Score'], alpha=0.5)
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.show()
+    #GDP_dataframe.to_csv(path + 'GDP_Data.csv', index=False)
 
