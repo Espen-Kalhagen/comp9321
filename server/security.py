@@ -1,6 +1,7 @@
 import secrets
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql import func
 from flask_bcrypt import Bcrypt
 import jwt
 import datetime
@@ -14,7 +15,7 @@ flask_bcrypt = Bcrypt()
 
 
 class User(db.Model):
-    __tablename__ = "user"
+    __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(50), unique=True)
@@ -22,21 +23,24 @@ class User(db.Model):
 
 
 class Key(db.Model):
-    __tablename__ = "key"
+    __tablename__ = "keys"
 
     key = db.Column(db.String(60), primary_key=True, unique=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    #key_user = db.relationship('User', backref='keys')
 
 
 class Usage(db.Model):
-    __tablename__ = "usage"
+    __tablename__ = "usages"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    key_id = db.Column(db.String(60), db.ForeignKey('key.key'), nullable=False)
-    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+    key_id = db.Column(db.String(60), db.ForeignKey('keys.key'), nullable=False)
+    timestamp = db.Column(db.DateTime)#, default=datetime.datetime.utcnow
     endpoint = db.Column(db.String(60))
     method = db.Column(db.String(60))
+
+    #key_usage = db.relationship('Key',backref='usages')
 
 
 def auth_init(app):
@@ -174,6 +178,18 @@ def get_keys(user_id):
     return Key.query.filter_by(user_id=user_id).all()
 
 
+def get_usage():
+    return Usage.query.all()
+
+
+def get_usage_user(user_id):
+    return []
+    #return Usage.query\
+    #    .join(Key, Key.key == Usage.key_id)\
+    #    .add_columns(Usage.method, Usage.endpoint, Usage.method, Usage.key_id, Usage.timestamp, Key.user_id)\
+    #    .all()
+#.filter(Key.user_id==user_id)\
+
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -203,8 +219,28 @@ def key_required(f):
             key = Key.query.filter_by(key=api_key).first()
             if not key:
                 return response_fail
+
             return f(*args, **kwargs)
         else:
             return response_fail
 
     return decorated
+
+
+def track_usage(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+
+        new_usage = Usage(
+            key_id=request.headers.get("X-API-KEY"),
+            endpoint=str(request.url_rule),
+            method=request.method,
+            timestamp=datetime.datetime.now()
+        )
+        save_changes(new_usage)
+        return f(*args, **kwargs)
+
+    return decorated
+
+
+

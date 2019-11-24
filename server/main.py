@@ -9,17 +9,40 @@ from flask import Flask
 from flask_restplus import Resource, Api, fields, Namespace
 from server.security import *
 from server.ns_prediction import api as ns_prediction
+from server.ns_security import api as ns_security
+from server.ns_analytics import api as ns_analytics
+
+authorization = {
+    'apikey': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'X-API-KEY'
+    }
+}
 
 app = Flask(__name__)
+app.config.setdefault('RESTPLUS_MASK_SWAGGER', False)
 app.app_context().push()
 auth_init(app)
-api = Api(app)
+api = Api(app,
+          title='Predict-a-thon',
+          version='1.0',
+          description="The goal of this API is to help users, developers and publishers understand rating and sales of"
+                      "games through correlation using deep learning and data aggregation.",
+          authorizations=authorization,
+          security='apikey')
+
+api.add_namespace(ns_security)
+api.add_namespace(ns_analytics)
+api.add_namespace(ns_prediction)
+
 
 vgs_csv_file = '../Video_Games_Sales_as_at_22_Dec_2016.csv'
 vgs_df_global = pd.read_csv(vgs_csv_file)
 
 gdp_csv_file = '../GDP.csv'
 gdp_df_global = pd.read_csv(gdp_csv_file, skiprows= 4)
+
 
 def clean_vgs_df():
     global vgs_df_global
@@ -30,20 +53,8 @@ def clean_vgs_df():
     vgs_df_global['Year_of_Release'] = vgs_df_global['Year_of_Release'].apply(
         lambda x: int(x) if not pd.isna(x) else np.nan)
 
+
 clean_vgs_df()
-
-api.add_namespace(ns_prediction)
-
-ns_security = api.namespace('security', description='Authorization and API key management')
-
-user_model = api.model('user', {
-    'username': fields.String(required=True, description='user username'),
-    'password': fields.String(required=True, description='user password')
-})
-
-key_model = api.model('key', {
-    'key': fields.String(required=True, description='API key')
-})
 
 video_game_model = api.model('video_game', {
     'Name' : fields.String(required=True, description='Name of video game'),
@@ -64,61 +75,10 @@ video_game_model = api.model('video_game', {
     'Rating' : fields.String(required=False, description='Rating of video game')
 })
 
-@ns_security.route('/login')
-class UserLogin(Resource):
-    """
-        User Login Resource
-    """
-    @api.doc('user login')
-    @api.expect(user_model, validate=True)
-    def post(self):
-        """Returns a bearer token after successful authentication."""
-        post_data = request.json
-        return login_user(data=post_data)
-
-
-@ns_security.route('/users')
-class UserList(Resource):
-    @api.response(201, 'User successfully created.')
-    @api.expect(user_model, validate=True)
-    def post(self):
-        """Creates a new User """
-        data = request.json
-        return save_new_user(data=data)
-
-
-@ns_security.route('/keys')
-class KeyList(Resource):
-
-    @token_required
-    def post(self):
-        """Create a new api key"""
-        data, _ = get_logged_in_user(request)
-        user_id = data.get("data").get("user_id")
-        key = create_key(user_id)
-        return {
-                   "message": "Key successfully created.",
-                   "data": {"key": key}
-               }, 201
-
-    @token_required
-    @api.marshal_list_with(key_model, envelope="data")
-    def get(self):
-        """Get all api keys for the logged in user"""
-        data, _ = get_logged_in_user(request)
-        user_id = data.get("data").get("user_id")
-        return get_keys(user_id)
-
-    @token_required
-    def delete(self, key):
-        """Remove a certain api key"""
-        data, _ = get_logged_in_user(request)
-        user_id = data.get("data").get("user_id")
-        return delete_key(user_id, key)
-
 groupByParser = reqparse.RequestParser()
 groupByParser.add_argument('category', required=True, choices=["year", "publisher", "genre", "platform", 'developer'], help="Category to group by")
 groupByParser.add_argument('sum', required=False, default=True, type=inputs.boolean, help="Whether to display sum or average")
+
 
 @api.route('/groupby')
 class GroupBy(Resource):
@@ -158,8 +118,10 @@ class GroupBy(Resource):
 
         return groupby_year_df.to_dict(), 200
 
+
 idParser = reqparse.RequestParser()
 idParser.add_argument('ID', required=True, type=int, help="ID of video game")
+
 
 @api.route('/video_game')
 class VideoGames(Resource):
@@ -197,8 +159,8 @@ class VideoGames(Resource):
 
         newID = vgs_df_global.size
 
-
         return {"message": "Video Game {} is created".format(newID)}, 201
+
 
     @api.response(500, 'Server Error')
     @api.response(404, 'Incorrect ID given')
@@ -265,6 +227,7 @@ class GDPtoSales(Resource):
         }
 
         return packet, 200
+
 
 @app.after_request
 def apply_caching(response):
