@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restplus import Resource, Api, fields, Namespace
 from server.security import *
-# from server.ns_prediction import api as ns_prediction
+from server.ns_prediction import api as ns_prediction
 from server.ns_security import api as ns_security
 from server.ns_analytics import api as ns_analytics
 from server.ns_client import api as ns_client
@@ -29,7 +29,7 @@ api = Api(app,
 
 api.add_namespace(ns_security)
 api.add_namespace(ns_analytics)
-# api.add_namespace(ns_prediction)
+api.add_namespace(ns_prediction)
 api.add_namespace(ns_client)
 api.add_namespace(ns_statistics)
 
