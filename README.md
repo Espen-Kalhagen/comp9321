@@ -14,7 +14,12 @@ The frontend is a static file that uses VUE to request data from the API
 ## How to run
 
 ### Server
-After installing flask and other dependensies, run the main file in the server
+* Install the dependencies described in requirements.txt
+* run the main file in the server
+
+The API is available at http://127.0.0.1:5000/
+and the API swagger documentation is available at http://127.0.0.1:5000/
 
 ### Client
-Open the index.html file in client in any web browser
+After starting the server visit http://127.0.0.1:5000/client/ to get the client file
+
