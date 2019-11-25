@@ -1,0 +1,853 @@
+{
+    "swagger": "2.0",
+    "basePath": "/",
+    "paths": {
+        "/analytics/usage": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Get usage statistics",
+                "operationId": "get_usage",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
+                        "required": true,
+                        "description": "Bearer access token",
+                        "default": "Bearer "
+                    }
+                ],
+                "tags": [
+                    "analytics"
+                ]
+            }
+        },
+        "/client/": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_client",
+                "tags": [
+                    "client"
+                ]
+            }
+        },
+        "/predict/rating": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Returns prediction of avarage critic score",
+                "operationId": "get_rating",
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "type": "integer",
+                        "required": true,
+                        "description": "The games release year",
+                        "enum": [
+                            1994,
+                            1995,
+                            1996,
+                            1997,
+                            1998,
+                            1999,
+                            2000,
+                            2001,
+                            2002,
+                            2003,
+                            2004,
+                            2005,
+                            2006,
+                            2007,
+                            2008,
+                            2009,
+                            2010,
+                            2011,
+                            2012,
+                            2013,
+                            2014,
+                            2015,
+                            2016,
+                            2017,
+                            2018,
+                            2019
+                        ],
+                        "collectionFormat": "multi"
+                    },
+                    {
+                        "name": "region",
+                        "in": "query",
+                        "type": "string",
+                        "required": true,
+                        "description": "The games sales numbers corresponding region",
+                        "enum": [
+                            "EU",
+                            "NA",
+                            "JP",
+                            "Others"
+                        ],
+                        "collectionFormat": "multi"
+                    },
+                    {
+                        "name": "sales",
+                        "in": "query",
+                        "type": "integer",
+                        "required": true,
+                        "description": "The games sales number",
+                        "enum": [
+                            0,
+                            1,
+                            2,
+                            3,
+                            4,
+                            5,
+                            6,
+                            7,
+                            8,
+                            9,
+                            10,
+                            11,
+                            12,
+                            13,
+                            14,
+                            15,
+                            16,
+                            17,
+                            18,
+                            19,
+                            20,
+                            21,
+                            22,
+                            23,
+                            24,
+                            25,
+                            26,
+                            27,
+                            28,
+                            29,
+                            30,
+                            31,
+                            32,
+                            33,
+                            34,
+                            35,
+                            36,
+                            37,
+                            38,
+                            39,
+                            40
+                        ],
+                        "collectionFormat": "multi"
+                    }
+                ],
+                "tags": [
+                    "predict"
+                ]
+            }
+        },
+        "/predict/sales": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Returns prediction of number of sales",
+                "operationId": "get_sales",
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "type": "integer",
+                        "required": true,
+                        "description": "The games release year",
+                        "enum": [
+                            1994,
+                            1995,
+                            1996,
+                            1997,
+                            1998,
+                            1999,
+                            2000,
+                            2001,
+                            2002,
+                            2003,
+                            2004,
+                            2005,
+                            2006,
+                            2007,
+                            2008,
+                            2009,
+                            2010,
+                            2011,
+                            2012,
+                            2013,
+                            2014,
+                            2015,
+                            2016,
+                            2017,
+                            2018,
+                            2019
+                        ],
+                        "collectionFormat": "multi"
+                    },
+                    {
+                        "name": "region",
+                        "in": "query",
+                        "type": "string",
+                        "required": true,
+                        "description": "The games sales numbers corresponding region",
+                        "enum": [
+                            "EU",
+                            "NA",
+                            "JP",
+                            "Others"
+                        ],
+                        "collectionFormat": "multi"
+                    },
+                    {
+                        "name": "rating",
+                        "in": "query",
+                        "type": "integer",
+                        "required": true,
+                        "description": "The games avarage critics rating",
+                        "enum": [
+                            0,
+                            1,
+                            2,
+                            3,
+                            4,
+                            5,
+                            6,
+                            7,
+                            8,
+                            9,
+                            10,
+                            11,
+                            12,
+                            13,
+                            14,
+                            15,
+                            16,
+                            17,
+                            18,
+                            19,
+                            20,
+                            21,
+                            22,
+                            23,
+                            24,
+                            25,
+                            26,
+                            27,
+                            28,
+                            29,
+                            30,
+                            31,
+                            32,
+                            33,
+                            34,
+                            35,
+                            36,
+                            37,
+                            38,
+                            39,
+                            40,
+                            41,
+                            42,
+                            43,
+                            44,
+                            45,
+                            46,
+                            47,
+                            48,
+                            49,
+                            50,
+                            51,
+                            52,
+                            53,
+                            54,
+                            55,
+                            56,
+                            57,
+                            58,
+                            59,
+                            60,
+                            61,
+                            62,
+                            63,
+                            64,
+                            65,
+                            66,
+                            67,
+                            68,
+                            69,
+                            70,
+                            71,
+                            72,
+                            73,
+                            74,
+                            75,
+                            76,
+                            77,
+                            78,
+                            79,
+                            80,
+                            81,
+                            82,
+                            83,
+                            84,
+                            85,
+                            86,
+                            87,
+                            88,
+                            89,
+                            90,
+                            91,
+                            92,
+                            93,
+                            94,
+                            95,
+                            96,
+                            97,
+                            98,
+                            99
+                        ],
+                        "collectionFormat": "multi"
+                    }
+                ],
+                "tags": [
+                    "predict"
+                ]
+            }
+        },
+        "/security/keys": {
+            "post": {
+                "responses": {
+                    "201": {
+                        "description": "Key successfully created."
+                    }
+                },
+                "summary": "Create a new api key",
+                "operationId": "post_key_list",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
+                        "required": true,
+                        "description": "Bearer access token",
+                        "default": "Bearer "
+                    }
+                ],
+                "tags": [
+                    "security"
+                ]
+            },
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/key"
+                            }
+                        }
+                    }
+                },
+                "summary": "Get all api keys for the logged in user",
+                "operationId": "get_key_list",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
+                        "required": true,
+                        "description": "Bearer access token",
+                        "default": "Bearer "
+                    }
+                ],
+                "tags": [
+                    "security"
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Remove a certain api key",
+                "operationId": "delete_key_list",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "type": "string",
+                        "required": true,
+                        "description": "Bearer access token",
+                        "default": "Bearer "
+                    }
+                ],
+                "tags": [
+                    "security"
+                ]
+            }
+        },
+        "/security/login": {
+            "post": {
+                "responses": {
+                    "401": {
+                        "description": "Wrong credentials."
+                    },
+                    "200": {
+                        "description": "Login successful."
+                    }
+                },
+                "summary": "Returns a bearer token after successful authentication",
+                "operationId": "post_user_login",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/user"
+                        }
+                    }
+                ],
+                "tags": [
+                    "security"
+                ]
+            }
+        },
+        "/security/users": {
+            "post": {
+                "responses": {
+                    "409": {
+                        "description": "User already exists."
+                    },
+                    "201": {
+                        "description": "User successfully created."
+                    }
+                },
+                "summary": "Creates a new User",
+                "operationId": "post_user_list",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/user"
+                        }
+                    }
+                ],
+                "tags": [
+                    "security"
+                ]
+            }
+        },
+        "/statistics/GDP_to_sales": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "400": {
+                        "description": "Invalid country given"
+                    },
+                    "404": {
+                        "description": "Invalid year given"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                },
+                "summary": "Returns the percentage of a region's GDP to video games sales within a given year",
+                "operationId": "get_gd_pto_sales",
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "type": "integer",
+                        "minimum": 1994,
+                        "maximum": 2018,
+                        "required": true,
+                        "description": "Year to compare, between 1994-2018"
+                    },
+                    {
+                        "name": "country",
+                        "in": "query",
+                        "type": "string",
+                        "required": true,
+                        "description": "Region to compare",
+                        "enum": [
+                            "US",
+                            "EU",
+                            "JP"
+                        ],
+                        "collectionFormat": "multi"
+                    }
+                ],
+                "tags": [
+                    "statistics"
+                ]
+            }
+        },
+        "/statistics/descriptive": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_descriptive_statistics",
+                "tags": [
+                    "statistics"
+                ]
+            }
+        },
+        "/statistics/groupby": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "404": {
+                        "description": "Incorrect groupby given"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                },
+                "summary": "Returns the sales ($USD millions) and ratings of video games grouped by a given category",
+                "operationId": "get_group_by",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "type": "string",
+                        "required": true,
+                        "description": "Category to group by",
+                        "enum": [
+                            "year",
+                            "publisher",
+                            "genre",
+                            "platform",
+                            "developer"
+                        ],
+                        "collectionFormat": "multi"
+                    },
+                    {
+                        "name": "sum",
+                        "in": "query",
+                        "type": "boolean",
+                        "description": "Whether to display sum or average",
+                        "default": true
+                    }
+                ],
+                "tags": [
+                    "statistics"
+                ]
+            }
+        },
+        "/statistics/regional_sales": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                },
+                "summary": "Returns the percentage of regional video games sales to global sales",
+                "operationId": "get_regional_to_global_sales",
+                "tags": [
+                    "statistics"
+                ]
+            }
+        },
+        "/statistics/video_game": {
+            "post": {
+                "responses": {
+                    "201": {
+                        "description": "User successfully created."
+                    },
+                    "400": {
+                        "description": "Validation Error"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                },
+                "summary": "Adds a video game to data set",
+                "operationId": "post_video_games",
+                "parameters": [
+                    {
+                        "name": "payload",
+                        "required": true,
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/video_game"
+                        }
+                    }
+                ],
+                "tags": [
+                    "statistics"
+                ]
+            },
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "404": {
+                        "description": "Invalid ID given"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                },
+                "summary": "Returns a video game given by an ID",
+                "operationId": "get_video_games",
+                "parameters": [
+                    {
+                        "name": "ID",
+                        "in": "query",
+                        "type": "integer",
+                        "required": true,
+                        "description": "ID of video game"
+                    }
+                ],
+                "tags": [
+                    "statistics"
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "User successfully deleted"
+                    },
+                    "404": {
+                        "description": "Incorrect ID given"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                },
+                "summary": "Deletes a video game by a given ID",
+                "operationId": "delete_video_games",
+                "parameters": [
+                    {
+                        "name": "ID",
+                        "in": "query",
+                        "type": "integer",
+                        "required": true,
+                        "description": "ID of video game"
+                    }
+                ],
+                "tags": [
+                    "statistics"
+                ]
+            }
+        },
+        "/test": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "summary": "Returns a test message",
+                "operationId": "get_test",
+                "tags": [
+                    "default"
+                ]
+            }
+        }
+    },
+    "info": {
+        "title": "Predict-a-thon",
+        "version": "1.0",
+        "description": "The goal of this API is to help users, developers and publishers understand rating and sales ofgames through correlation using deep learning and data aggregation."
+    },
+    "produces": [
+        "application/json"
+    ],
+    "consumes": [
+        "application/json"
+    ],
+    "securityDefinitions": {
+        "apikey": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "X-API-KEY"
+        }
+    },
+    "security": [
+        {
+            "apikey": []
+        }
+    ],
+    "tags": [
+        {
+            "name": "default",
+            "description": "Default namespace"
+        },
+        {
+            "name": "security",
+            "description": "Authorization and API key management"
+        },
+        {
+            "name": "analytics",
+            "description": "API usage analytics"
+        },
+        {
+            "name": "predict",
+            "description": "Use neural net to predict sales or critic score"
+        },
+        {
+            "name": "client",
+            "description": "Serves a client website"
+        },
+        {
+            "name": "statistics",
+            "description": "General statistics of the data."
+        }
+    ],
+    "definitions": {
+        "user": {
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "description": "user username"
+                },
+                "password": {
+                    "type": "string",
+                    "description": "user password"
+                }
+            },
+            "type": "object"
+        },
+        "key": {
+            "required": [
+                "key"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "description": "API key"
+                }
+            },
+            "type": "object"
+        },
+        "video_game": {
+            "required": [
+                "Critic_Count",
+                "Critic_Score",
+                "EU_Sales",
+                "Global_Sales",
+                "JP_Sales",
+                "NA_Sales",
+                "Name",
+                "Other_Sales",
+                "User_Count",
+                "User_Score",
+                "Year_of_Release"
+            ],
+            "properties": {
+                "Name": {
+                    "type": "string",
+                    "description": "Name of video game"
+                },
+                "Platform": {
+                    "type": "string",
+                    "description": "Platform of video game"
+                },
+                "Year_of_Release": {
+                    "type": "integer",
+                    "description": "Year of video game's release"
+                },
+                "Genre": {
+                    "type": "string",
+                    "description": "Genre of video game"
+                },
+                "Publisher": {
+                    "type": "string",
+                    "description": "Publisher of video game"
+                },
+                "NA_Sales": {
+                    "type": "number",
+                    "description": "North American sales of video game"
+                },
+                "EU_Sales": {
+                    "type": "number",
+                    "description": "European Union sales of video game"
+                },
+                "JP_Sales": {
+                    "type": "number",
+                    "description": "Japanese sales of video game"
+                },
+                "Other_Sales": {
+                    "type": "number",
+                    "description": "Other countries sales of video game"
+                },
+                "Global_Sales": {
+                    "type": "number",
+                    "description": "Global sales of video game"
+                },
+                "Critic_Score": {
+                    "type": "number",
+                    "description": "Critical score of video game"
+                },
+                "Critic_Count": {
+                    "type": "integer",
+                    "description": "Critic count of video game"
+                },
+                "User_Score": {
+                    "type": "number",
+                    "description": "User score of video game"
+                },
+                "User_Count": {
+                    "type": "integer",
+                    "description": "User count of video game"
+                },
+                "Developer": {
+                    "type": "string",
+                    "description": "Developer of video game"
+                },
+                "Rating": {
+                    "type": "string",
+                    "description": "Rating of video game"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "responses": {
+        "ParseError": {
+            "description": "When a mask can't be parsed"
+        },
+        "MaskError": {
+            "description": "When any error occurs on mask"
+        }
+    }
+}
