@@ -51,8 +51,6 @@ video_game_model = api.model('video_game', {
 groupByParser = reqparse.RequestParser()
 groupByParser.add_argument('category', required=True, choices=["year", "publisher", "genre", "platform", 'developer'], help="Category to group by")
 groupByParser.add_argument('sum', required=False, default=True, type=inputs.boolean, help="Whether to display sum or average")
-
-
 @api.route('/groupby')
 class GroupBy(Resource):
     @api.response(500, 'Server Error')
@@ -87,17 +85,36 @@ class GroupBy(Resource):
         if sumBool:
             groupby_year_df = vgs_df.groupby(column_to_groupBy).sum()
         else:
-            groupby_year_df = vgs_df.groupby(column_to_groupBy).sum()
+            groupby_year_df = vgs_df.groupby(column_to_groupBy).mean()
 
         groupby_year_df = groupby_year_df[["Global_Sales", "Critic_Score"]]
 
         return groupby_year_df.to_dict(), 200
 
+@api.route('/regional_sales')
+class RegionalToGlobalSales(Resource):
+    @api.response(500, 'Server Error')
+    # @api.response(404, 'Invalid region given')
+    @api.response(200, 'Success')
+    @key_required
+    @track_usage
+    def get(self):
+        """Returns the percentage of regional video games sales to global sales"""
+
+        vgs_df = vgs_df_global.copy(deep=True)
+
+        vgs_df = vgs_df.groupby('Year_of_Release').sum()
+        vgs_df['NA_Proportion'] = vgs_df['NA_Sales']/vgs_df['Global_Sales']
+        vgs_df['JP_Proportion'] = vgs_df['JP_Sales']/vgs_df['Global_Sales']
+        vgs_df['EU_Proportion'] = vgs_df['EU_Sales']/vgs_df['Global_Sales']
+        vgs_df['Other_Proportion'] = vgs_df['Other_Sales']/vgs_df['Global_Sales']
+
+        vgs_df = vgs_df[['NA_Proportion', 'JP_Proportion', 'EU_Proportion', 'Other_Proportion']]
+
+        return vgs_df.to_dict(), 200
 
 idParser = reqparse.RequestParser()
 idParser.add_argument('ID', required=True, type=int, help="ID of video game")
-
-
 @api.route('/video_game')
 class VideoGames(Resource):
     @api.response(500, 'Server Error')
@@ -211,9 +228,9 @@ class GDPtoSales(Resource):
 
         return packet, 200
 
-    @api.route('/descriptive')
-    class DescriptiveStatistics(Resource):
-        @key_required
-        @track_usage
-        def get(self):
-            return json.loads(generate_features()), 200
+@api.route('/descriptive')
+class DescriptiveStatistics(Resource):
+    @key_required
+    @track_usage
+    def get(self):
+        return json.loads(generate_features()), 200
