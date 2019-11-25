@@ -12,7 +12,6 @@ SECRET_KEY = "g[}b-867T2-)fxQ.[KQ!NJH{"
 db = SQLAlchemy()
 flask_bcrypt = Bcrypt()
 
-
 class User(db.Model):
     __tablename__ = "user"
 

@@ -1,6 +1,6 @@
 from flask_restplus import Resource, Api, fields, Namespace
-from server.security import *
-from server.neuralnet import *
+from security import *
+from neuralnet import *
 api = Namespace('predict', description='Use neural net to predict sales or critic score')
 
 neuralnet = Neuralnet()

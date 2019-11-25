@@ -7,8 +7,8 @@ import pandas as pd
 
 from flask import Flask
 from flask_restplus import Resource, Api, fields, Namespace
-from server.security import *
-from server.ns_prediction import api as ns_prediction
+from security import *
+# from ns_prediction import api as ns_prediction
 
 app = Flask(__name__)
 app.app_context().push()
@@ -32,9 +32,10 @@ def clean_vgs_df():
 
 clean_vgs_df()
 
-api.add_namespace(ns_prediction)
+# api.add_namespace(ns_prediction)
 
 ns_security = api.namespace('security', description='Authorization and API key management')
+data = api.namespace('data', description='Accessing and manipulating data sets')
 
 user_model = api.model('user', {
     'username': fields.String(required=True, description='user username'),
@@ -120,7 +121,7 @@ groupByParser = reqparse.RequestParser()
 groupByParser.add_argument('category', required=True, choices=["year", "publisher", "genre", "platform", 'developer'], help="Category to group by")
 groupByParser.add_argument('sum', required=False, default=True, type=inputs.boolean, help="Whether to display sum or average")
 
-@api.route('/groupby')
+@data.route('/groupby')
 class GroupBy(Resource):
     @api.response(500, 'Server Error')
     @api.response(404, 'Incorrect groupby given')
@@ -154,14 +155,17 @@ class GroupBy(Resource):
         else:
             groupby_year_df = vgs_df.groupby(column_to_groupBy).sum()
 
-        groupby_year_df = groupby_year_df[["Global_Sales", "Critic_Score"]]
+        groupby_year_df = groupby_year_df[["JP_Sales","NA_Sales","EU_Sales","Global_Sales", "Critic_Score"]]
 
         return groupby_year_df.to_dict(), 200
 
 idParser = reqparse.RequestParser()
 idParser.add_argument('ID', required=True, type=int, help="ID of video game")
 
-@api.route('/video_game')
+authParser = reqparse.RequestParser()
+authParser.add_argument('Authorization', required=True, location='headers')
+
+@data.route('/video_game')
 class VideoGames(Resource):
     @api.response(500, 'Server Error')
     @api.response(404, 'Invalid ID given')
@@ -182,6 +186,8 @@ class VideoGames(Resource):
     @api.response(400, 'Validation Error')
     @api.response(201, 'User successfully created.')
     @api.expect(video_game_model, validate=True)
+    @api.expect(authParser, validate=True)
+    @token_required
     def post(self):
         """Adds a video game to data set"""
         video_game = request.json
@@ -204,6 +210,8 @@ class VideoGames(Resource):
     @api.response(404, 'Incorrect ID given')
     @api.response(200, 'User successfully deleted')
     @api.expect(idParser, validate=True)
+    @api.expect(authParser, validate=True)
+    @token_required
     def delete(self):
         """Deletes a video game by a given ID"""
         args = idParser.parse_args()
@@ -220,7 +228,7 @@ class VideoGames(Resource):
 GDPtoSalesParser = reqparse.RequestParser()
 GDPtoSalesParser.add_argument('year', required=True, type=inputs.int_range(1980,2018), help="Year to compare, between 1980-2018")
 GDPtoSalesParser.add_argument('country', required=True, choices=["US", "EU", "JP"], help="Region to compare")
-@api.route('/GDP_to_sales')
+@data.route('/GDP_to_sales')
 class GDPtoSales(Resource):
     @api.response(500, 'Server Error')
     @api.response(404, 'Invalid year given')
@@ -265,8 +273,6 @@ class GDPtoSales(Resource):
         }
 
         return packet, 200
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
