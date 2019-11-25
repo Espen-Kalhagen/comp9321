@@ -190,7 +190,7 @@ class GDPtoSales(Resource):
     @key_required
     @track_usage
     def get(self):
-        """Returns the percentage of GDP that the video game sales made up"""
+        """Returns the percentage of a region's GDP to video games sales within a given year"""
         gdp_df = gdp_df_global.copy(deep=True)
         vgs_df = vgs_df_global.copy(deep=True)
 
