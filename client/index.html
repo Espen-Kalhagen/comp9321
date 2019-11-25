@@ -194,7 +194,7 @@
         },
         handleLoggin: function(response){
 
-          if (response.response.status == 201 || response.response.status == 409) {
+          if (response.status == 201 || response.status == 409) {
                     axios.post(apiURL + '/security/login', user).then(function (response) {
                         if (response.status == 200) {
                           axios.defaults.headers.post['Authorization'] = "Bearer " + response.data.Authorization
@@ -264,7 +264,7 @@
         clickCalculateGroupBy: function(){
           sum = this.groupby_sum==="sum"
           axios
-              .get(apiURL+"/groupby?category="+this.groupby_category+"&sum="+sum, {withCredentials: true})
+              .get(apiURL+"/statistics/groupby?category="+this.groupby_category+"&sum="+sum, {withCredentials: true})
               .then(response => {
                 console.log(response)
                 Swal.fire({
@@ -289,7 +289,7 @@
               "password": "superSecret"
           };
           axios.post(apiURL + '/security/users', user)
-              .then(response => this.handleLoggin(response)).catch(error => this.handleLoggin(error));
+              .then(response => this.handleLoggin(response)).catch(error => this.handleLoggin(error.response));
       }
       })
     </script>
