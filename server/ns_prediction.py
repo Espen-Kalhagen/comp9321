@@ -19,6 +19,7 @@ class Rating(Resource):
 
     @api.expect(rating_parser)
     @key_required
+    @track_usage
     def get(self):
         """Returns prediction of avarage critic score"""
         args = rating_parser.parse_args(strict=True)
@@ -39,6 +40,7 @@ class Sales(Resource):
 
     @api.expect(sales_parser)
     @key_required
+    @track_usage
     def get(self):
         """Returns prediction of number of sales"""
         args = sales_parser.parse_args(strict=True)

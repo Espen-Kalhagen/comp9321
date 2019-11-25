@@ -32,7 +32,7 @@ def normalize(df):
 if __name__ == '__main__':
     file_video_game = 'Video_Games_Sales_as_at_22_Dec_2016.csv'
     file_GDP = 'GDP.csv'
-    path = '../'
+    path = './'
 
     video_game_dataframe = pd.read_csv(path+file_video_game)
     GDP_dataframe = pd.read_csv(path+file_GDP, skiprows= 4)

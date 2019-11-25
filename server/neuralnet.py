@@ -26,7 +26,7 @@ class Neuralnet:
 
     def __init__(self):
         # Setup prediction to be ready to recive a request ---------
-        path = '../'
+        path = './data/'
         self.scaling = pd.read_csv(path+"scaling.csv")
         self.scaling = self.scaling.set_index("feature")
         self.platform_codes = pd.read_csv(path+"platform_codes.csv")

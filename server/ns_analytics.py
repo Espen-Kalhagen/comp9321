@@ -11,6 +11,13 @@ usage_model = api.model('usage', {
     'method': fields.String(description='method')
 })
 
+auth_parser = api.parser()
+auth_parser.add_argument('Authorization', type='str',
+                         location='headers',
+                         help='Bearer access token',
+                         required=True,
+                         default='Bearer ')
+
 
 @api.route('/usagelist')
 class UsageList(Resource):
@@ -22,6 +29,7 @@ class UsageList(Resource):
 
 @api.route('/usage')
 class Usage(Resource):
+    @api.doc(parser=auth_parser)
     @token_required
     def get(self):
         """Get usage statistics"""
