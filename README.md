@@ -14,7 +14,21 @@ The frontend is a static file that uses VUE to request data from the API
 ## How to run
 
 ### Server
-After installing flask and other dependensies, run the main file in the server
+* Install the dependencies described in requirements.txt
+* run the main file in the server
+
+The API is available at http://127.0.0.1:5000/
+and the API swagger documentation is available at http://127.0.0.1:5000/
+
+#### Authenticating
+
+* Register a user by posting {"username": "username", "password": "password"} to /security/users.
+* Log in by posting {"username": "username", "password": "password"} to /security/login.
+* POST /security/login returns a bearer token for authentication.
+* Generate an api key by posting to /security/keys with the header "Authorization: Bearer token".
+* POST /security/keys will return your newly generated api key
+* For accessing the api resources, send the header "X-API-KEY: key"
 
 ### Client
-Open the index.html file in client in any web browser
+After starting the server visit http://127.0.0.1:5000/client/ to get the client file
+
