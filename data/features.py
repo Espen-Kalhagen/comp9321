@@ -3,6 +3,7 @@ import numpy as np
 import statistics
 from scipy import stats
 import warnings
+import json
 
 
 
@@ -32,7 +33,7 @@ def generation(x):
 
 
 def generate_features():
-    path = '../'
+    path = '../data/'
     file = 'VideoGame_Data_without_normalisation.csv'
     # ignore by message
     warnings.filterwarnings("ignore", message="")
@@ -42,6 +43,9 @@ def generate_features():
 
     # get new generated features
     feature_collection = generation(video_game_dataframe)
-    result = pd.DataFrame(list(feature_collection.items()), columns= ['feature', 'value'])
-    features_generated_json = result.to_json()
-    return features_generated_json
+
+    # create json file for the features
+    features_generated_json = json.dumps(feature_collection)
+    with open(path + "features_generated.json", "w") as write_file:
+        json.dump(features_generated_json, write_file)
+
