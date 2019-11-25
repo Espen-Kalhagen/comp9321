@@ -8,7 +8,7 @@ import numpy as np
 from server.features import generate_features
 import json
 
-api = Namespace('statistics', description='Statistics')
+api = Namespace('statistics', description='General statistics of the data.')
 
 vgs_csv_file = './data/Video_Games_Sales_as_at_22_Dec_2016.csv'
 vgs_df_global = pd.read_csv(vgs_csv_file)
@@ -161,7 +161,7 @@ class VideoGames(Resource):
 
 
 GDPtoSalesParser = reqparse.RequestParser()
-GDPtoSalesParser.add_argument('year', required=True, type=inputs.int_range(1980,2018), help="Year to compare, between 1980-2018")
+GDPtoSalesParser.add_argument('year', required=True, type=inputs.int_range(1994,2018), help="Year to compare, between 1994-2018")
 GDPtoSalesParser.add_argument('country', required=True, choices=["US", "EU", "JP"], help="Region to compare")
 @api.route('/GDP_to_sales')
 class GDPtoSales(Resource):

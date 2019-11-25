@@ -22,17 +22,19 @@ auth_parser.add_argument('Authorization', type='str',
 
 @api.route('/login')
 class UserLogin(Resource):
-    @api.doc('user login')
+    @api.response(200, 'Login successful.')
+    @api.response(401, 'Wrong credentials.')
     @api.expect(user_model, validate=True)
     def post(self):
         """Returns a bearer token after successful authentication."""
         post_data = request.json
-        return login_user(data=post_data)
+        return login_user(data=post_data), 200
 
 
 @api.route('/users')
 class UserList(Resource):
     @api.response(201, 'User successfully created.')
+    @api.response(409, 'User already exists.')
     @api.expect(user_model, validate=True)
     def post(self):
         """Creates a new User """
@@ -43,6 +45,7 @@ class UserList(Resource):
 @api.route('/keys')
 class KeyList(Resource):
 
+    @api.response(201, 'Key successfully created.')
     @api.doc(parser=auth_parser)
     @token_required
     def post(self):

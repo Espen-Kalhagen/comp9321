@@ -106,7 +106,7 @@ def login_user(data):
         else:
             response_object = {
                 'status': 'fail',
-                'message': 'email or password does not match.'
+                'message': 'username or password does not match.'
             }
             return response_object, 401
 

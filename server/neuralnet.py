@@ -2,8 +2,6 @@ from keras.models import model_from_json
 import pandas as pd
 import tensorflow as tf
 
-#TODO: Worldbank data for gdp
-#TODO: platform
 
 class Neuralnet:
 

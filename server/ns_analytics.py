@@ -19,14 +19,6 @@ auth_parser.add_argument('Authorization', type='str',
                          default='Bearer ')
 
 
-@api.route('/usagelist')
-class UsageList(Resource):
-    @api.marshal_list_with(usage_model, envelope="data")
-    def get(self):
-        """Get usage log"""
-        return get_usage()
-
-
 @api.route('/usage')
 class Usage(Resource):
     @api.doc(parser=auth_parser)

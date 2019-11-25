@@ -1,12 +1,13 @@
 from flask_restplus import Resource, Api, fields, Namespace
 from server.security import *
 from server.neuralnet import *
+
 api = Namespace('predict', description='Use neural net to predict sales or critic score')
 
 neuralnet = Neuralnet()
 
 region_choises = ('EU', 'NA','JP','Others')
-year_choises = list(range(1950,2020))
+year_choises = list(range(1994,2020))
 
 rating_parser = api.parser()
 rating_parser.add_argument('year', type=int, choices=year_choises, help='The games release year', required=True)
