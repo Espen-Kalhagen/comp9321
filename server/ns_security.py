@@ -28,7 +28,7 @@ class UserLogin(Resource):
     def post(self):
         """Returns a bearer token after successful authentication."""
         post_data = request.json
-        return login_user(data=post_data), 200
+        return login_user(data=post_data)
 
 
 @api.route('/users')
