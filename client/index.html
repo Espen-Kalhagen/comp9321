@@ -124,6 +124,7 @@
           region2:"NA",
           year2:undefined,
           errors:[],
+          apikey: undefined
 
       },
       methods: {
@@ -182,7 +183,7 @@
 
           if(this.errors.length < 1){
             axios
-              .get(apiURL+"/predict/sales?year="+this.year2+"&region="+this.region2+"&rating="+this.rating)
+              .get(apiURL+"/predict/sales?year="+this.year2+"&region="+this.region2+"&rating="+this.rating, {withCredentials: true})
               .then(response => this.handleRequest(response))
               .catch(error => this.handleError(error));
 
@@ -209,7 +210,7 @@
 
           if(this.errors.length < 1){
             axios
-              .get(apiURL+"/predict/rating?year="+this.year1+"&region="+this.region1+"&sales="+this.sales)
+              .get(apiURL+"/predict/rating?year="+this.year1+"&region="+this.region1+"&sales="+this.sales, {withCredentials: true})
               .then(response => this.handleRequest(response))
               .catch(error => this.handleError(error));
           }
@@ -217,8 +218,44 @@
           
         },
         
+      },
+      mounted() {
+
+          user = {
+              "username": "testclient",
+              "password": "superSecret"
+          };
+          axios.post(apiURL + '/security/users', user)
+              .then(function (response) {
+                  if (response.status == 201) {
+                      axios.post(apiURL + '/security/login', user).then(function (response) {
+                          console.log("response")
+                          console.log(response)
+                          if (response.status == 200) {
+
+                              axios.defaults.headers.post['Authorization'] = "Bearer " + response.data.Authorization
+
+                              axios.post(apiURL + '/security/keys', user).then(function (response) {
+                                  console.log("response")
+                                  console.log(response)
+                                  if (response.status == 201) {
+
+                                      axios.defaults.headers.common['x-api-key'] = response.data.key
+
+                                  }
+
+                              })
+
+                          }
+                      })
+
+
+                  }
+                }).catch(function (error) {
+                    console.log(error);
+                });
       }
-    })
+      })
     </script>
   </body>
 </html>
