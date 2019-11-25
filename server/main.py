@@ -229,6 +229,16 @@ class GDPtoSales(Resource):
         return packet, 200
 
 
+@api.route('/test')
+class Test(Resource):
+
+    @key_required
+    @track_usage
+    def get(self):
+        """Returns a test message."""
+        return {'test': 'ok'}
+
+
 @app.after_request
 def apply_caching(response):
     response.headers.set('Access-Control-Allow-Origin', '*')

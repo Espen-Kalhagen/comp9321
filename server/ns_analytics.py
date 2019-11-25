@@ -1,5 +1,6 @@
 from server.security import *
 from flask_restplus import Resource, fields, Namespace
+import pandas as pd
 
 api = Namespace('analytics', description='API usage analytics')
 
@@ -9,17 +10,6 @@ usage_model = api.model('usage', {
     'endpoint': fields.String(description='endpoint'),
     'method': fields.String(description='method')
 })
-
-stats_model = api.model('stats', {
-    'key_id': fields.String(description='key id'),
-    'timestamp': fields.String(description='timestamp'),
-    'endpoint': fields.String(description='endpoint'),
-    'method': fields.String(description='method'),
-    'user_id': fields.String(description='username')
-})
-
-usage_parser = api.parser()
-#usage_parser.add_argument()
 
 
 @api.route('/usagelist')
@@ -32,10 +22,18 @@ class UsageList(Resource):
 
 @api.route('/usage')
 class Usage(Resource):
-    @api.marshal_list_with(stats_model, envelope="data")
     @token_required
     def get(self):
         """Get usage statistics"""
         data, _ = get_logged_in_user(request)
         user_id = data.get("data").get("user_id")
-        return get_usage_user(user_id)
+        usage = get_usage_user(user_id)
+
+        df = pd.DataFrame(usage, columns=['key', 'endpoint', 'method', 'timestamp', 'user_id'])
+        num_requests = len(df)
+        by_endpoint = df.groupby(["endpoint"])['key'].count().to_dict()
+        result = {
+            "num_request": num_requests,
+            "by_endpoint": by_endpoint
+        }
+        return result, 200

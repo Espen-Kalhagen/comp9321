@@ -1,7 +1,7 @@
 import secrets
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.sql import func
+from sqlalchemy.sql import text
 from flask_bcrypt import Bcrypt
 import jwt
 import datetime
@@ -28,7 +28,7 @@ class Key(db.Model):
     key = db.Column(db.String(60), primary_key=True, unique=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    #key_user = db.relationship('User', backref='keys')
+    key_usage = db.relationship('Usage')
 
 
 class Usage(db.Model):
@@ -36,11 +36,9 @@ class Usage(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     key_id = db.Column(db.String(60), db.ForeignKey('keys.key'), nullable=False)
-    timestamp = db.Column(db.DateTime)#, default=datetime.datetime.utcnow
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.now)
     endpoint = db.Column(db.String(60))
     method = db.Column(db.String(60))
-
-    #key_usage = db.relationship('Key',backref='usages')
 
 
 def auth_init(app):
@@ -183,12 +181,9 @@ def get_usage():
 
 
 def get_usage_user(user_id):
-    return []
-    #return Usage.query\
-    #    .join(Key, Key.key == Usage.key_id)\
-    #    .add_columns(Usage.method, Usage.endpoint, Usage.method, Usage.key_id, Usage.timestamp, Key.user_id)\
-    #    .all()
-#.filter(Key.user_id==user_id)\
+    query = text("SELECT usages.key_id, usages.endpoint, usages.method, usages.timestamp, keys.user_id FROM usages, keys WHERE keys.user_id = :id")
+    return db.session.execute(query, {'id':user_id}).fetchall()
+
 
 def token_required(f):
     @wraps(f)
@@ -234,8 +229,7 @@ def track_usage(f):
         new_usage = Usage(
             key_id=request.headers.get("X-API-KEY"),
             endpoint=str(request.url_rule),
-            method=request.method,
-            timestamp=datetime.datetime.now()
+            method=request.method
         )
         save_changes(new_usage)
         return f(*args, **kwargs)
