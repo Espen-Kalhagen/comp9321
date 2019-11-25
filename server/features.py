@@ -32,7 +32,7 @@ def generation(x):
 
 
 def generate_features():
-    path = '../'
+    path = './data/'
     file = 'VideoGame_Data_without_normalisation.csv'
     # ignore by message
     warnings.filterwarnings("ignore", message="")

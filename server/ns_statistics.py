@@ -5,6 +5,8 @@ from server.security import *
 from flask_restplus import Resource, fields, Namespace, reqparse, inputs
 import pandas as pd
 import numpy as np
+from server.features import generate_features
+import json
 
 api = Namespace('statistics', description='Statistics')
 
@@ -208,3 +210,10 @@ class GDPtoSales(Resource):
         }
 
         return packet, 200
+
+    @api.route('/descriptive')
+    class DescriptiveStatistics(Resource):
+        @key_required
+        @track_usage
+        def get(self):
+            return json.loads(generate_features()), 200

@@ -22,10 +22,6 @@ auth_parser.add_argument('Authorization', type='str',
 
 @api.route('/login')
 class UserLogin(Resource):
-    """
-        User Login Resource
-    """
-
     @api.doc('user login')
     @api.expect(user_model, validate=True)
     def post(self):

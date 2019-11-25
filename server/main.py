@@ -37,11 +37,12 @@ api.add_namespace(ns_statistics)
 @api.route('/test')
 class Test(Resource):
 
+    @api.response(200, 'Success')
     @key_required
     @track_usage
     def get(self):
         """Returns a test message."""
-        return {'test': 'ok'}
+        return {'test': 'ok'}, 200
 
 
 @app.after_request
