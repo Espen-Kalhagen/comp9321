@@ -46,7 +46,7 @@ class Sales(Resource):
         """Returns prediction of number of sales"""
         args = sales_parser.parse_args(strict=True)
 
-        sales = neuralnet.predictSales(args.year,args.region,args.rating)
+        sales = neuralnet.predictSales(year=args.year,region=args.region,rating=args.rating)
         print(sales)
     
         return {'sales': sales}

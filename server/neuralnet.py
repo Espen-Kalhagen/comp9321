@@ -2,7 +2,6 @@ from keras.models import model_from_json
 import pandas as pd
 import tensorflow as tf
 
-
 class Neuralnet:
 
     def normalize(self,df,scaling):
@@ -31,6 +30,9 @@ class Neuralnet:
         self.platform_codes = self.platform_codes.set_index("platform")
         self.region_codes = pd.read_csv(path+"region_codes.csv",na_filter = False)
         self.region_codes = self.region_codes.set_index("region")
+        self.gdp_df = pd.read_csv(path+"GDP.csv", skiprows=4)
+        self.gdp_df = self.gdp_df.set_index('Country Code')
+
 
 
         #Load neural net models  ------------------------------------
@@ -56,7 +58,14 @@ class Neuralnet:
         self.loaded_sales_model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['mae'])
         print("Loaded sales model from disk")
 
-    def predictRating(self, year,region,sales,platform=0,gdp=684704773969):
+    def predictRating(self, year,region,sales,platform=0):
+
+        if region == "NA":
+            gdp = self.gdp_df.at['USA', str(year)]
+        elif region == "EU":
+            gdp = self.gdp_df.at['EUU', str(year)]
+        else:
+            gdp = self.gdp_df.at['JPN', str(year)]
 
         region = self.getRegionNumber(region)
 
@@ -73,7 +82,15 @@ class Neuralnet:
         result = self.denormalize(result, "Critic_Score", self.scaling)
         return result.item(0)
 
-    def predictSales(self, year,region,rating,platform=0,gdp=684704773969):
+    def predictSales(self, year,region,rating,platform=0):
+
+
+        if region == "NA":
+            gdp = self.gdp_df.at['USA', str(year)]
+        elif region == "EU":
+            gdp = self.gdp_df.at['EUU', str(year)]
+        else:
+            gdp = self.gdp_df.at['JPN', str(year)]
 
         region = self.getRegionNumber(region)
 
