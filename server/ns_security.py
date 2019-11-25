@@ -56,7 +56,7 @@ class KeyList(Resource):
         key = create_key(user_id)
         return {
                    "message": "Key successfully created.",
-                   "data": {"key": key}
+                   "key": key
                }, 201
 
     @api.doc(parser=auth_parser)

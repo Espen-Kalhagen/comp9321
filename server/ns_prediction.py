@@ -18,6 +18,7 @@ rating_parser.add_argument('sales', type=int,choices=list(range(0,41)), help='Th
 class Rating(Resource):
 
     @api.expect(rating_parser)
+    @key_required
     def get(self):
         """Returns prediction of avarage critic score"""
         args = rating_parser.parse_args(strict=True)
@@ -37,6 +38,7 @@ sales_parser.add_argument('rating', type=int,choices=list(range(0,100)), help='T
 class Sales(Resource):
 
     @api.expect(sales_parser)
+    @key_required
     def get(self):
         """Returns prediction of number of sales"""
         args = sales_parser.parse_args(strict=True)

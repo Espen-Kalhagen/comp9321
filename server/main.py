@@ -1,4 +1,3 @@
-from flask import Flask, abort, jsonify, request
 from flask_restplus import Resource, Api, fields, reqparse, inputs
 import numpy as np
 import sys, traceback
@@ -11,6 +10,7 @@ from server.security import *
 from server.ns_prediction import api as ns_prediction
 from server.ns_security import api as ns_security
 from server.ns_analytics import api as ns_analytics
+from server.ns_client import api as ns_client
 
 authorization = {
     'apikey': {
@@ -20,7 +20,7 @@ authorization = {
     }
 }
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
 app.config.setdefault('RESTPLUS_MASK_SWAGGER', False)
 app.app_context().push()
 auth_init(app)
@@ -35,6 +35,7 @@ api = Api(app,
 api.add_namespace(ns_security)
 api.add_namespace(ns_analytics)
 api.add_namespace(ns_prediction)
+api.add_namespace(ns_client)
 
 
 vgs_csv_file = '../Video_Games_Sales_as_at_22_Dec_2016.csv'
@@ -241,7 +242,11 @@ class Test(Resource):
 
 @app.after_request
 def apply_caching(response):
-    response.headers.set('Access-Control-Allow-Origin', '*')
+    response.headers.set("Access-Control-Allow-Origin", "http://127.0.0.1:5000")
+    response.headers.set("Access-Control-Allow-Credentials", "true")
+    response.headers.set("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT")
+    response.headers.set("Access-Control-Allow-Headers",
+                       "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
     return response
 
 
