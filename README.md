@@ -20,6 +20,15 @@ The frontend is a static file that uses VUE to request data from the API
 The API is available at http://127.0.0.1:5000/
 and the API swagger documentation is available at http://127.0.0.1:5000/
 
+#### Authenticating
+
+* Register a user by posting {"username": "username", "password": "password"} to /security/users.
+* Log in by posting {"username": "username", "password": "password"} to /security/login.
+* POST /security/login returns a bearer token for authentication.
+* Generate an api key by posting to /security/keys with the header "Authorization: Bearer token".
+* POST /security/keys will return your newly generated api key
+* For accessing the api resources, send the header "X-API-KEY: key"
+
 ### Client
 After starting the server visit http://127.0.0.1:5000/client/ to get the client file
 
