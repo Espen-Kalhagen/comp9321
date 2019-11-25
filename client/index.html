@@ -90,6 +90,35 @@
             </div>
           
       </div>
+      <br>
+      <div class="row">
+        <div class="col-md-12">
+          <h3>Group by query</h3>
+          <p>Queries the dataset with a group by to be able to gain insights in the data</p>
+
+          <div class="form-group">
+              <label for="exampleFormControlSelect1">Select group by category</label>
+              <select v-model="groupby_category" class="form-control" id="exampleFormControlSelect1">
+              <option>year</option>
+              <option>publisher</option>
+              <option>genre</option>
+              <option>platform</option>
+              <option>developer</option>
+              </select>
+          </div>
+
+          <div class="form-group">
+              <label for="exampleFormControlSelect1">Select aggregation function</label>
+              <select v-model="groupby_sum" class="form-control" id="exampleFormControlSelect1">
+              <option>sum</option>
+              <option>avarage</option>
+              </select>
+          </div>
+
+          <button class="btn btn-primary" v-on:click="clickCalculateGroupBy">Calculate group by</button>
+
+        </div>
+      </div>
       
       <footer class="my-5 pt-5 text-muted text-center text-small">
         <p class="mb-1"> 2019 Group + 2 COMP9321</p>
@@ -124,8 +153,9 @@
           region2:"NA",
           year2:undefined,
           errors:[],
-          apikey: undefined
-
+          groupby_category:"publisher",
+          groupby_sum:"sum",
+          groupby_data:undefined
       },
       methods: {
         handleRequest: function(response){
@@ -161,6 +191,25 @@
                 'Predict-a-thons predicted sales number in ' + this.region2,
               showCloseButton: true});
           }
+        },
+        handleLoggin: function(response){
+
+          if (response.response.status == 201 || response.response.status == 409) {
+                    axios.post(apiURL + '/security/login', user).then(function (response) {
+                        if (response.status == 200) {
+                          axios.defaults.headers.post['Authorization'] = "Bearer " + response.data.Authorization
+                          axios.post(apiURL + '/security/keys', user).then(function (response) {
+                              if (response.status == 201) {
+                                  axios.defaults.headers.common['x-api-key'] = response.data.key
+                              }
+                          })
+                        }
+                    })
+                  }
+            else{
+              console.log(response)
+            }
+
         },
         handleError: function(error){
           Swal.fire({
@@ -202,11 +251,6 @@
             this.errors.push('Sales required to be positive');
           }
 
-          let numberOfSales = document.getElementById('exampleFormControlInput1').value;
-          let e = document.getElementById('exampleFormControlSelect1')
-          let region = e.options[e.selectedIndex].value
-          console.log(region)
-          console.log(numberOfSales)
 
           if(this.errors.length < 1){
             axios
@@ -217,6 +261,25 @@
           
           
         },
+        clickCalculateGroupBy: function(){
+          sum = this.groupby_sum==="sum"
+          axios
+              .get(apiURL+"/groupby?category="+this.groupby_category+"&sum="+sum, {withCredentials: true})
+              .then(response => {
+                console.log(response)
+                Swal.fire({
+                  title: '<strong>Groupby result</strong>',
+                  icon: 'success',
+                  html:
+                    '<div>'+
+                      '<pre id="json">' +JSON.stringify(response.data, undefined, 2)+'</pre>'+
+                    '</div>',
+                  showCloseButton: true
+                });
+                
+              })
+              .catch(error => this.handleError(error));
+        }
         
       },
       mounted() {
@@ -226,34 +289,7 @@
               "password": "superSecret"
           };
           axios.post(apiURL + '/security/users', user)
-              .then(function (response) {
-                  if (response.status == 201) {
-                      axios.post(apiURL + '/security/login', user).then(function (response) {
-                          console.log("response")
-                          console.log(response)
-                          if (response.status == 200) {
-
-                              axios.defaults.headers.post['Authorization'] = "Bearer " + response.data.Authorization
-
-                              axios.post(apiURL + '/security/keys', user).then(function (response) {
-                                  console.log("response")
-                                  console.log(response)
-                                  if (response.status == 201) {
-
-                                      axios.defaults.headers.common['x-api-key'] = response.data.key
-
-                                  }
-
-                              })
-
-                          }
-                      })
-
-
-                  }
-                }).catch(function (error) {
-                    console.log(error);
-                });
+              .then(response => this.handleLoggin(response)).catch(error => this.handleLoggin(error));
       }
       })
     </script>
